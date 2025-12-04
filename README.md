@@ -1,5 +1,14 @@
 # Boilerplate and Starter for Next.js 16+, Tailwind CSS 4, and TypeScript.
 
+> **Fork notice**
+> This repository is now tailored for the **DreamTrade** crypto trading frontend.
+> The backend/ORM stack from the original boilerplate has been removed.
+> Focus areas:
+> - TradingView-style charting powered by `lightweight-charts`
+> - Mock market data services ready to swap for real REST/WebSocket APIs
+> - Streaming news feed + AI causal insights components
+> - Clerk-authenticated workspace with profile management
+
 <p align="center">
   <a href="https://demo.nextjs-boilerplate.com">
     <img
