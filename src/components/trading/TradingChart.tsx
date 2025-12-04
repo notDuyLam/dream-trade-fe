@@ -1,13 +1,8 @@
 'use client';
 
 import type { HistogramData, IChartApi, ISeriesApi, UTCTimestamp } from 'lightweight-charts';
-import type {
-  CandleDataPoint,
-  ChartTheme,
-  Timeframe,
-  TradingSymbol,
-} from '@/types/trading';
-import { CandlestickSeries, ColorType, createChart, HistogramSeries } from 'lightweight-charts';
+import type { CandleDataPoint, ChartDisplay, ChartTheme, Timeframe, TradingSymbol } from '@/types/trading';
+import { CandlestickSeries, ColorType, createChart, HistogramSeries, LineSeries } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
 import { priceStream } from '@/services/websocket/priceStream';
 
@@ -16,6 +11,8 @@ type TradingChartProps = {
   symbol: TradingSymbol;
   timeframe: Timeframe;
   theme?: ChartTheme;
+  chartType: ChartDisplay;
+  className?: string;
 };
 
 const themeMap = {
@@ -34,7 +31,7 @@ const themeMap = {
 export const TradingChart = (props: TradingChartProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const candleSeriesRef = useRef<ISeriesApi<'Candlestick'> | null>(null);
+  const priceSeriesRef = useRef<ISeriesApi<'Candlestick'> | ISeriesApi<'Line'> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
 
   useEffect(() => {
@@ -64,16 +61,24 @@ export const TradingChart = (props: TradingChartProps) => {
       },
     });
 
-    const candleSeries = chart.addSeries(
-      CandlestickSeries,
-      {
-        upColor: '#10b981',
-        downColor: '#ef4444',
-        wickUpColor: '#10b981',
-        wickDownColor: '#ef4444',
-        borderVisible: false,
-      },
-    ) as ISeriesApi<'Candlestick'>;
+    const priceSeries = props.chartType === 'candles'
+      ? chart.addSeries(
+        CandlestickSeries,
+        {
+          upColor: '#10b981',
+          downColor: '#ef4444',
+          wickUpColor: '#10b981',
+          wickDownColor: '#ef4444',
+          borderVisible: false,
+        },
+      ) as ISeriesApi<'Candlestick'>
+      : chart.addSeries(
+        LineSeries,
+        {
+          color: '#10b981',
+          lineWidth: 2,
+        },
+      ) as ISeriesApi<'Line'>;
 
     const volumeSeries = chart.addSeries(
       HistogramSeries,
@@ -92,7 +97,7 @@ export const TradingChart = (props: TradingChartProps) => {
     });
 
     chartRef.current = chart;
-    candleSeriesRef.current = candleSeries;
+    priceSeriesRef.current = priceSeries;
     volumeSeriesRef.current = volumeSeries;
 
     const observer = new ResizeObserver((entries) => {
@@ -109,16 +114,16 @@ export const TradingChart = (props: TradingChartProps) => {
       observer.disconnect();
       chart.remove();
       chartRef.current = null;
-      candleSeriesRef.current = null;
+      priceSeriesRef.current = null;
       volumeSeriesRef.current = null;
     };
-  }, [props.symbol, props.theme, props.timeframe]);
+  }, [props.symbol, props.theme, props.timeframe, props.chartType]);
 
   useEffect(() => {
-    const candleSeries = candleSeriesRef.current;
+    const priceSeries = priceSeriesRef.current;
     const volumeSeries = volumeSeriesRef.current;
 
-    if (!candleSeries || !volumeSeries || !props.candles.length) {
+    if (!priceSeries || !volumeSeries || !props.candles.length) {
       return;
     }
 
@@ -130,38 +135,64 @@ export const TradingChart = (props: TradingChartProps) => {
       close: candle.close,
     }));
 
+    const lineData = props.candles.map(candle => ({
+      time: candle.time as UTCTimestamp,
+      value: candle.close,
+    }));
+
     const volumeData: HistogramData[] = props.candles.map(candle => ({
       time: candle.time as UTCTimestamp,
       value: candle.volume,
       color: candle.open > candle.close ? '#ef4444' : '#10b981',
     }));
 
-    candleSeries.setData(candleData);
+    if (props.chartType === 'candles') {
+      (priceSeries as ISeriesApi<'Candlestick'>).setData(candleData);
+    } else {
+      (priceSeries as ISeriesApi<'Line'>).setData(lineData);
+    }
+
     volumeSeries.setData(volumeData);
     chartRef.current?.timeScale().fitContent();
-  }, [props.candles]);
+  }, [props.candles, props.chartType]);
 
   useEffect(() => {
-    const candleSeries = candleSeriesRef.current;
+    const priceSeries = priceSeriesRef.current;
 
-    if (!candleSeries) {
+    if (!priceSeries) {
       return;
     }
 
     const unsubscribe = priceStream.subscribe(props.symbol, (price) => {
-      candleSeries.update({
-        time: Math.floor(price.updatedAt / 1000) as UTCTimestamp,
-        open: price.price,
-        high: price.price,
-        low: price.price,
-        close: price.price,
-      });
+      if (props.chartType === 'candles') {
+        (priceSeries as ISeriesApi<'Candlestick'>).update({
+          time: Math.floor(price.updatedAt / 1000) as UTCTimestamp,
+          open: price.price,
+          high: price.price,
+          low: price.price,
+          close: price.price,
+        });
+      } else {
+        (priceSeries as ISeriesApi<'Line'>).update({
+          time: Math.floor(price.updatedAt / 1000) as UTCTimestamp,
+          value: price.price,
+        });
+      }
     });
 
     return unsubscribe;
-  }, [props.symbol]);
+  }, [props.symbol, props.chartType]);
+
+  const containerClass = [
+    'rounded-2xl border border-slate-800/60 bg-slate-950/40 p-2 min-h-[420px] lg:min-h-[560px]',
+    props.className ?? '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <div className="h-[420px] w-full" ref={containerRef} />
+    <div className={containerClass}>
+      <div className="h-full w-full rounded-xl bg-slate-950" ref={containerRef} />
+    </div>
   );
 };

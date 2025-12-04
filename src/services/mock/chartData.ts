@@ -1,4 +1,5 @@
 import type { CandleDataPoint, Timeframe, TradingSymbol } from '@/types/trading';
+import { getPricePrecision, roundPrice } from '@/utils/pricePrecision';
 
 const basePrices: Record<TradingSymbol, number> = {
   BTCUSDT: 64000,
@@ -26,6 +27,7 @@ export const generateMockCandles = (
   points = 240,
 ): CandleDataPoint[] => {
   const seedPrice = basePrices[symbol];
+  const pricePrecision = getPricePrecision(seedPrice);
   const candles: CandleDataPoint[] = [];
   const interval = timeframeSeconds[timeframe];
 
@@ -43,10 +45,10 @@ export const generateMockCandles = (
 
     candles.push({
       time,
-      open: Number(open.toFixed(2)),
-      high: Number(high.toFixed(2)),
-      low: Number(low.toFixed(2)),
-      close: Number(close.toFixed(2)),
+      open: roundPrice(open, pricePrecision),
+      high: roundPrice(high, pricePrecision),
+      low: roundPrice(low, pricePrecision),
+      close: roundPrice(close, pricePrecision),
       volume: Number(volume.toFixed(2)),
     });
 

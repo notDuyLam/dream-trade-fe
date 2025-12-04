@@ -58,3 +58,5 @@ export type AiInsight = {
 };
 
 export type ChartTheme = 'dark' | 'light';
+
+export type ChartDisplay = 'candles' | 'line';

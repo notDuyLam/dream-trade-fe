@@ -1,4 +1,5 @@
 import type { RealtimePrice, TradingSymbol } from '@/types/trading';
+import { getPricePrecision, roundPrice } from '@/utils/pricePrecision';
 
 type Listener = (payload: RealtimePrice) => void;
 
@@ -68,16 +69,17 @@ class MockPriceStream {
 
   private createPayload(symbol: TradingSymbol): RealtimePrice {
     const base = seedPrices[symbol];
+    const precision = getPricePrecision(base);
     const prev = this.lastPrice.get(symbol) ?? base;
     const price = Math.max(0.0001, prev + randomDrift(base));
     const change24h = ((price - base) / base) * 100;
 
     const payload: RealtimePrice = {
       symbol,
-      price: Number(price.toFixed(2)),
+      price: roundPrice(price, precision),
       change24h: Number(change24h.toFixed(2)),
-      high24h: Number(Math.max(price, base * 1.02).toFixed(2)),
-      low24h: Number(Math.min(price, base * 0.98).toFixed(2)),
+      high24h: roundPrice(Math.max(price, base * 1.02), precision),
+      low24h: roundPrice(Math.min(price, base * 0.98), precision),
       updatedAt: Date.now(),
     };
 
