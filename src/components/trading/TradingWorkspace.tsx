@@ -8,11 +8,14 @@ import type {
   TradingSymbol,
 } from '@/types/trading';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { CoinService } from '@/services/coins/coinService';
 import { mockChartService } from '@/services/mock/chartData';
+import { livePriceStream } from '@/services/websocket/livePriceStream';
 import { priceStream } from '@/services/websocket/priceStream';
 import { formatPrice, roundPrice } from '@/utils/pricePrecision';
 import { SymbolSelector } from './SymbolSelector';
 import { TimeframeSelector } from './TimeframeSelector';
+
 import { TradingChart } from './TradingChart';
 
 type TradingWorkspaceProps = {
@@ -22,13 +25,20 @@ type TradingWorkspaceProps = {
 };
 
 const chartTypes: { id: ChartDisplay; label: string }[] = [
-  { id: 'candles', label: 'Nến' },
-  { id: 'line', label: 'Đường' },
+  { id: 'candles', label: 'Candles' },
+  { id: 'line', label: 'Line' },
 ];
 
-const watchlistSymbols: TradingSymbol[] = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'ADAUSDT'];
+// Watchlist will be loaded dynamically
+const getWatchlistSymbols = (): TradingSymbol[] => {
+  // In the future, this can come from user preferences or API
+  return CoinService.getAllSymbols();
+};
 
-const fallbackQuote = (symbol: TradingSymbol, candle?: CandleDataPoint): RealtimePrice | null => {
+const fallbackQuote = (
+  symbol: TradingSymbol,
+  candle?: CandleDataPoint,
+): RealtimePrice | null => {
   if (!candle) {
     return null;
   }
@@ -46,46 +56,86 @@ const fallbackQuote = (symbol: TradingSymbol, candle?: CandleDataPoint): Realtim
 export const TradingWorkspace = (props: TradingWorkspaceProps) => {
   const [symbol, setSymbol] = useState<TradingSymbol>(props.defaultSymbol);
   const [timeframe, setTimeframe] = useState<Timeframe>(props.defaultTimeframe);
-  const [candles, setCandles] = useState<CandleDataPoint[]>(props.initialCandles);
+  const [candles, setCandles] = useState<CandleDataPoint[]>(() => props.initialCandles);
   const [chartType, setChartType] = useState<ChartDisplay>('candles');
   const [isLoading, setIsLoading] = useState(false);
-  const [quote, setQuote] = useState<RealtimePrice | null>(
+  const [quote, setQuote] = useState<RealtimePrice | null>(() =>
     fallbackQuote(props.defaultSymbol, props.initialCandles.at(-1)),
   );
-  const [watchlistQuotes, setWatchlistQuotes] = useState<Partial<Record<TradingSymbol, RealtimePrice | null>>>({});
+  const [watchlistQuotes, setWatchlistQuotes] = useState<
+    Partial<Record<TradingSymbol, RealtimePrice | null>>
+  >({});
+  const [watchlistSymbols] = useState<TradingSymbol[]>(() => getWatchlistSymbols());
 
-  const updateWorkspace = useCallback(async (nextSymbol: TradingSymbol, nextTimeframe: Timeframe) => {
-    setIsLoading(true);
-    const data = await mockChartService.fetchCandles({
-      symbol: nextSymbol,
-      timeframe: nextTimeframe,
-    });
-    setCandles(data);
-    setIsLoading(false);
-  }, []);
+  const updateWorkspace = useCallback(
+    async (nextSymbol: TradingSymbol, nextTimeframe: Timeframe) => {
+      setIsLoading(true);
+      const data = await mockChartService.fetchCandles({
+        symbol: nextSymbol,
+        timeframe: nextTimeframe,
+      });
+      setCandles(data);
+      setIsLoading(false);
+    },
+    [],
+  );
 
   const handleSymbolChange = (nextSymbol: TradingSymbol) => {
     setSymbol(nextSymbol);
+    setQuote(null);
     void updateWorkspace(nextSymbol, timeframe);
   };
 
   const handleTimeframeChange = (nextTimeframe: Timeframe) => {
     setTimeframe(nextTimeframe);
+    setQuote(null);
     void updateWorkspace(symbol, nextTimeframe);
   };
 
-  useEffect(() => {
-    setQuote(fallbackQuote(symbol, candles.at(-1)));
-  }, [candles, symbol]);
+  const fallback = useMemo(
+    () => fallbackQuote(symbol, candles.at(-1)),
+    [symbol, candles],
+  );
+  const displayQuote = quote ?? fallback;
 
   useEffect(() => {
-    const unsubscribe = priceStream.subscribe(symbol, payload => setQuote(payload));
+    const useLive = Boolean(process.env.NEXT_PUBLIC_WS_URL);
+    const source = useLive ? livePriceStream : priceStream;
+
+    const unsubscribe = source.subscribe(symbol, (payload) => {
+      setQuote(payload);
+
+      setCandles((prev) => {
+        if (!prev.length) {
+          return prev;
+        }
+
+        const last = prev.at(-1)!;
+        const updated = {
+          ...last,
+          close: payload.price,
+          high: Math.max(last.high, payload.price),
+          low: Math.min(last.low, payload.price),
+          volume: last.volume,
+        };
+
+        return [...prev.slice(0, -1), updated];
+      });
+    });
+
     return unsubscribe;
   }, [symbol]);
 
   useEffect(() => {
+    if (watchlistSymbols.length === 0) {
+      return;
+    }
+
+    const useLive = Boolean(process.env.NEXT_PUBLIC_WS_URL);
+    const source = useLive ? livePriceStream : priceStream;
+
     const unsubscribers = watchlistSymbols.map(itemSymbol =>
-      priceStream.subscribe(itemSymbol, (payload) => {
+      source.subscribe(itemSymbol, (payload) => {
         setWatchlistQuotes(prev => ({
           ...prev,
           [itemSymbol]: payload,
@@ -96,15 +146,15 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
     return () => {
       unsubscribers.forEach(unsub => unsub());
     };
-  }, []);
+  }, [watchlistSymbols]);
 
   const changeColor = useMemo(() => {
-    if (!quote) {
+    if (!displayQuote) {
       return 'text-slate-400';
     }
 
-    return quote.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400';
-  }, [quote]);
+    return displayQuote.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400';
+  }, [displayQuote]);
 
   const latestCandle = candles.at(-1);
 
@@ -112,20 +162,36 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
     <div className="flex h-full flex-col gap-6">
       <nav className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-800 bg-slate-950/50 px-6 py-4">
         <div>
-          <p className="text-[11px] tracking-[0.4em] text-emerald-400 uppercase">Dream Trade</p>
-          <h1 className="text-xl font-semibold text-white">Trading Intelligence</h1>
+          <p className="text-[11px] tracking-[0.4em] text-emerald-400 uppercase">
+            Dream Trade
+          </p>
+          <h1 className="text-xl font-semibold text-white">
+            Trading Intelligence
+          </h1>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-300">
-          <button type="button" className="rounded-full border border-slate-700 px-4 py-1.5 text-white">
+          <button
+            type="button"
+            className="rounded-full border border-slate-700 px-4 py-1.5 text-white"
+          >
             Workspace
           </button>
-          <button type="button" className="rounded-full border border-transparent px-4 py-1.5 hover:text-white">
+          <button
+            type="button"
+            className="rounded-full border border-transparent px-4 py-1.5 hover:text-white"
+          >
             Insights
           </button>
-          <button type="button" className="rounded-full border border-transparent px-4 py-1.5 hover:text-white">
+          <button
+            type="button"
+            className="rounded-full border border-transparent px-4 py-1.5 hover:text-white"
+          >
             News
           </button>
-          <button type="button" className="rounded-full border border-transparent px-4 py-1.5 hover:text-white">
+          <button
+            type="button"
+            className="rounded-full border border-transparent px-4 py-1.5 hover:text-white"
+          >
             Settings
           </button>
         </div>
@@ -136,7 +202,9 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-xs tracking-[0.35em] text-slate-500 uppercase">Biểu đồ giá</p>
+                <p className="text-xs tracking-[0.35em] text-slate-500 uppercase">
+                  Price Chart
+                </p>
                 <h2 className="text-3xl font-semibold text-white">{symbol}</h2>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -161,11 +229,14 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
             <SymbolSelector value={symbol} onChange={handleSymbolChange} />
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <TimeframeSelector value={timeframe} onChange={handleTimeframeChange} />
+              <TimeframeSelector
+                value={timeframe}
+                onChange={handleTimeframeChange}
+              />
               <p className="text-xs text-slate-500">
-                Cập nhật:
+                Updated:
                 {' '}
-                {quote ? new Date(quote.updatedAt).toLocaleTimeString() : '--'}
+                {displayQuote ? new Date(displayQuote.updatedAt).toLocaleTimeString() : '--'}
               </p>
             </div>
           </div>
@@ -194,7 +265,9 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
           <section className="flex h-0 flex-1 flex-col overflow-hidden">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-[11px] tracking-[0.35em] text-slate-500 uppercase">Danh sách</p>
+                <p className="text-[11px] tracking-[0.35em] text-slate-500 uppercase">
+                  List
+                </p>
                 <h3 className="text-lg font-semibold text-white">Watchlist</h3>
               </div>
             </div>
@@ -202,7 +275,9 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
               {watchlistSymbols.map((item) => {
                 const data = watchlistQuotes[item];
                 const changeColorItem = data?.change24h
-                  ? data.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400'
+                  ? data.change24h >= 0
+                    ? 'text-emerald-400'
+                    : 'text-rose-400'
                   : 'text-slate-500';
                 return (
                   <button
@@ -221,9 +296,13 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
                       <p className="text-xs text-slate-500">Realtime</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-base font-semibold">{formatPrice(data?.price)}</p>
+                      <p className="text-base font-semibold">
+                        {formatPrice(data?.price)}
+                      </p>
                       <p className={`text-xs ${changeColorItem}`}>
-                        {data ? `${data.change24h >= 0 ? '+' : ''}${data.change24h.toFixed(2)}%` : '--'}
+                        {data
+                          ? `${data.change24h >= 0 ? '+' : ''}${data.change24h.toFixed(2)}%`
+                          : '--'}
                       </p>
                     </div>
                   </button>
@@ -234,45 +313,73 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
 
           <section className="flex-shrink-0 space-y-4 rounded-2xl border border-slate-800 bg-slate-950/80 p-4">
             <div>
-              <p className="text-[11px] tracking-[0.35em] text-slate-500 uppercase">Chi tiết</p>
+              <p className="text-[11px] tracking-[0.35em] text-slate-500 uppercase">
+                Details
+              </p>
               <h3 className="text-xl font-semibold text-white">{symbol}</h3>
             </div>
             <div className="flex items-end gap-3">
-              <span className="text-4xl font-semibold text-white">{formatPrice(quote?.price)}</span>
+              <span className="text-4xl font-semibold text-white">
+                {formatPrice(displayQuote?.price)}
+              </span>
               <span className={`text-sm font-semibold ${changeColor}`}>
-                {quote ? `${quote.change24h >= 0 ? '+' : ''}${quote.change24h.toFixed(2)}%` : '--'}
+                {displayQuote
+                  ? `${displayQuote.change24h >= 0 ? '+' : ''}${displayQuote.change24h.toFixed(2)}%`
+                  : '--'}
               </span>
             </div>
             <dl className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">Open</dt>
-                <dd className="mt-1 text-white">{formatPrice(latestCandle?.open)}</dd>
+                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">
+                  Open
+                </dt>
+                <dd className="mt-1 text-white">
+                  {formatPrice(latestCandle?.open)}
+                </dd>
               </div>
               <div>
-                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">Close</dt>
-                <dd className="mt-1 text-white">{formatPrice(latestCandle?.close)}</dd>
+                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">
+                  Close
+                </dt>
+                <dd className="mt-1 text-white">
+                  {formatPrice(latestCandle?.close)}
+                </dd>
               </div>
               <div>
-                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">High</dt>
-                <dd className="mt-1 text-white">{formatPrice(latestCandle?.high)}</dd>
+                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">
+                  High
+                </dt>
+                <dd className="mt-1 text-white">
+                  {formatPrice(latestCandle?.high)}
+                </dd>
               </div>
               <div>
-                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">Low</dt>
-                <dd className="mt-1 text-white">{formatPrice(latestCandle?.low)}</dd>
+                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">
+                  Low
+                </dt>
+                <dd className="mt-1 text-white">
+                  {formatPrice(latestCandle?.low)}
+                </dd>
               </div>
               <div>
-                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">Volume</dt>
-                <dd className="mt-1 text-white">{latestCandle ? `${latestCandle.volume.toFixed(0)}` : '--'}</dd>
+                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">
+                  Volume
+                </dt>
+                <dd className="mt-1 text-white">
+                  {latestCandle ? `${latestCandle.volume.toFixed(0)}` : '--'}
+                </dd>
               </div>
               <div>
-                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">Timeframe</dt>
+                <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">
+                  Timeframe
+                </dt>
                 <dd className="mt-1 text-white">{timeframe}</dd>
               </div>
             </dl>
             <p className="text-xs text-slate-500">
-              Dữ liệu cập nhật lúc:
+              Data updated at:
               {' '}
-              {quote ? new Date(quote.updatedAt).toLocaleTimeString() : '--'}
+              {displayQuote ? new Date(displayQuote.updatedAt).toLocaleTimeString() : '--'}
             </p>
           </section>
         </aside>

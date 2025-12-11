@@ -1,15 +1,7 @@
 'use client';
 
 import type { TradingSymbol } from '@/types/trading';
-
-const defaultSymbols: TradingSymbol[] = [
-  'BTCUSDT',
-  'ETHUSDT',
-  'BNBUSDT',
-  'SOLUSDT',
-  'XRPUSDT',
-  'ADAUSDT',
-];
+import { CoinService } from '@/services/coins/coinService';
 
 type SymbolSelectorProps = {
   value: TradingSymbol;
@@ -18,7 +10,7 @@ type SymbolSelectorProps = {
 };
 
 export const SymbolSelector = (props: SymbolSelectorProps) => {
-  const items = props.symbols ?? defaultSymbols;
+  const items = props.symbols ?? CoinService.getAllSymbols();
 
   return (
     <div className="flex flex-wrap gap-2">
