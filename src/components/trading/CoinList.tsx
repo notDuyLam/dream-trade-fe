@@ -44,35 +44,97 @@ export const CoinList = () => {
     })();
   }, []);
 
+  // Fetch data from Binance API or WebSocket
   useEffect(() => {
     if (allSymbols.length === 0) {
       return;
     }
 
-    const useLive = Boolean(process.env.NEXT_PUBLIC_WS_URL);
-    const source = useLive ? livePriceStream : priceStream;
+    // Option 1: Use Binance API from backend
+    const useBinanceAPI = process.env.NEXT_PUBLIC_API_URL;
 
-    const unsubscribers = allSymbols.map(symbol =>
-      source.subscribe(symbol, (payload) => {
-        setCoins(prev =>
-          prev.map(coin =>
-            coin.symbol === symbol
-              ? {
-                  ...coin,
-                  price: payload.price,
-                  change24h: payload.change24h,
-                  high24h: payload.high24h,
-                  low24h: payload.low24h,
+    if (useBinanceAPI) {
+      // Import market service dynamically
+      void import('@/services/market/marketService').then(({ marketService }) => {
+        // Fetch initial data
+        void marketService.getTicker24hr(allSymbols).then((tickers) => {
+          const tickerArray = Array.isArray(tickers) ? tickers : [tickers];
+
+          setCoins(prev =>
+            prev.map((coin) => {
+              const ticker = tickerArray.find(t => t.symbol === coin.symbol);
+              if (!ticker) {
+                return coin;
+              }
+
+              return {
+                ...coin,
+                price: Number.parseFloat(ticker.lastPrice),
+                change24h: Number.parseFloat(ticker.priceChangePercent),
+                high24h: Number.parseFloat(ticker.highPrice),
+                low24h: Number.parseFloat(ticker.lowPrice),
+                volume24h: Number.parseFloat(ticker.quoteVolume),
+              };
+            }),
+          );
+        }).catch(err => console.error('Failed to fetch from Binance API:', err));
+
+        // Refresh every 10 seconds
+        const interval = setInterval(() => {
+          void marketService.getTicker24hr(allSymbols).then((tickers) => {
+            const tickerArray = Array.isArray(tickers) ? tickers : [tickers];
+
+            setCoins(prev =>
+              prev.map((coin) => {
+                const ticker = tickerArray.find(t => t.symbol === coin.symbol);
+                if (!ticker) {
+                  return coin;
                 }
-              : coin,
-          ),
-        );
-      }),
-    );
 
-    return () => {
-      unsubscribers.forEach(unsub => unsub());
-    };
+                return {
+                  ...coin,
+                  price: Number.parseFloat(ticker.lastPrice),
+                  change24h: Number.parseFloat(ticker.priceChangePercent),
+                  high24h: Number.parseFloat(ticker.highPrice),
+                  low24h: Number.parseFloat(ticker.lowPrice),
+                  volume24h: Number.parseFloat(ticker.quoteVolume),
+                };
+              }),
+            );
+          }).catch(err => console.error('Failed to fetch from Binance API:', err));
+        }, 10000);
+
+        return () => clearInterval(interval);
+      });
+
+      return undefined;
+    } else {
+      // Option 2: Use WebSocket (original implementation)
+      const useLive = Boolean(process.env.NEXT_PUBLIC_WS_URL);
+      const source = useLive ? livePriceStream : priceStream;
+
+      const unsubscribers = allSymbols.map(symbol =>
+        source.subscribe(symbol, (payload) => {
+          setCoins(prev =>
+            prev.map(coin =>
+              coin.symbol === symbol
+                ? {
+                    ...coin,
+                    price: payload.price,
+                    change24h: payload.change24h,
+                    high24h: payload.high24h,
+                    low24h: payload.low24h,
+                  }
+                : coin,
+            ),
+          );
+        }),
+      );
+
+      return () => {
+        unsubscribers.forEach(unsub => unsub());
+      };
+    }
   }, [allSymbols]);
 
   const formatVolume = (volume: number | null) => {

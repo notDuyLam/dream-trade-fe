@@ -7,7 +7,8 @@ export type TradingSymbol
     | 'ADAUSDT';
 
 export type Timeframe
-  = | '1m'
+  = | '1s'
+    | '1m'
     | '5m'
     | '15m'
     | '1h'

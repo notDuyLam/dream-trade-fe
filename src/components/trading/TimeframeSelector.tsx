@@ -2,7 +2,7 @@
 
 import type { Timeframe } from '@/types/trading';
 
-const defaultTimeframes: Timeframe[] = ['1m', '5m', '15m', '1h', '4h', '1d'];
+const defaultTimeframes: Timeframe[] = ['1s', '1m', '5m', '15m', '1h', '4h', '1d'];
 
 type TimeframeSelectorProps = {
   value: Timeframe;
