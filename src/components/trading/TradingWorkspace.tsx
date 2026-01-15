@@ -7,6 +7,7 @@ import type {
   Timeframe,
   TradingSymbol,
 } from '@/types/trading';
+import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CoinService } from '@/services/coins/coinService';
 import { mockChartService } from '@/services/mock/chartData';
@@ -170,30 +171,36 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
           </h1>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-300">
-          <button
-            type="button"
+          <Link
+            href="/dashboard"
             className="rounded-full border border-slate-700 px-4 py-1.5 text-white"
           >
             Workspace
-          </button>
-          <button
-            type="button"
+          </Link>
+          <Link
+            href="/ai-forecast"
             className="rounded-full border border-transparent px-4 py-1.5 hover:text-white"
           >
             Insights
-          </button>
-          <button
-            type="button"
+          </Link>
+          <Link
+            href="/market"
             className="rounded-full border border-transparent px-4 py-1.5 hover:text-white"
           >
-            News
-          </button>
-          <button
-            type="button"
+            Market
+          </Link>
+          <Link
+            href="/pricing"
+            className="rounded-full border border-transparent px-4 py-1.5 hover:text-white"
+          >
+            Pricing
+          </Link>
+          <Link
+            href="/settings/billing"
             className="rounded-full border border-transparent px-4 py-1.5 hover:text-white"
           >
             Settings
-          </button>
+          </Link>
         </div>
       </nav>
 

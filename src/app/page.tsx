@@ -48,6 +48,12 @@ export default function HomePage() {
           >
             Launch workspace
           </Link>
+          <Link
+            href="/pricing"
+            className="rounded-md border border-slate-700 px-6 py-3 font-semibold text-white hover:border-slate-500"
+          >
+            Pricing
+          </Link>
         </div>
       </section>
 
