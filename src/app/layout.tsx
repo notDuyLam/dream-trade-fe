@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { PostHogProvider } from '@/components/analytics/PostHogProvider';
+import { QueryProvider } from '@/libs/QueryProvider';
+import { AppProviders } from '@/components/providers/AppProviders';
 import { AppConfig } from '@/utils/AppConfig';
 import '@/styles/global.css';
 
@@ -9,15 +11,26 @@ export const metadata: Metadata = {
     template: `%s | ${AppConfig.name}`,
   },
   description: AppConfig.description,
+  icons: {
+    icon: [
+      { url: '/analysis_16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/analysis_32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/analysis.png', type: 'image/png' },
+    ],
+    shortcut: '/favico.ico',
+    apple: '/analysis.png',
+  },
 };
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-slate-950 text-slate-50 antialiased">
-        <PostHogProvider>
-          {props.children}
-        </PostHogProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased transition-colors duration-200">
+        <QueryProvider>
+          <AppProviders>
+            <PostHogProvider>{props.children}</PostHogProvider>
+          </AppProviders>
+        </QueryProvider>
       </body>
     </html>
   );

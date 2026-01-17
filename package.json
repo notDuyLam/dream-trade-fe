@@ -31,8 +31,11 @@
     "@clerk/nextjs": "^6.35.6",
     "@hookform/resolvers": "^5.2.2",
     "@logtape/logtape": "^1.2.2",
+    "@react-oauth/google": "^0.12.2",
     "@sentry/nextjs": "^10.28.0",
     "@t3-oss/env-nextjs": "^0.13.8",
+    "@tanstack/react-query": "^5.90.12",
+    "cookie-parser": "^1.4.7",
     "lightweight-charts": "^5.0.9",
     "next": "^16.0.7",
     "posthog-js": "^1.300.0",
@@ -41,7 +44,8 @@
     "react-hook-form": "^7.67.0",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
-    "zod": "^4.1.13"
+    "zod": "^4.1.13",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^6.3.0",
@@ -60,6 +64,7 @@
     "@storybook/addon-vitest": "^10.1.4",
     "@storybook/nextjs-vite": "^10.1.4",
     "@tailwindcss/postcss": "^4.1.17",
+    "@types/cookie-parser": "^1.4.10",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@vitejs/plugin-react": "^5.1.1",

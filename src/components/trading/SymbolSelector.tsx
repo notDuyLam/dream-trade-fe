@@ -22,8 +22,8 @@ export const SymbolSelector = (props: SymbolSelectorProps) => {
           className={[
             'rounded-full border px-4 py-1.5 text-sm font-medium transition',
             symbol === props.value
-              ? 'border-emerald-400 bg-emerald-500/10 text-white'
-              : 'border-slate-700 text-slate-300 hover:border-slate-500',
+              ? 'border-emerald-400 bg-emerald-500/10 text-slate-900 dark:text-white'
+              : 'border-slate-400 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-500',
           ].join(' ')}
         >
           {symbol}
