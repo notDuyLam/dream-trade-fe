@@ -1,28 +1,28 @@
 import { apiRequest } from '@/services/api/client';
 
-export interface RegisterData {
+export type RegisterData = {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
-}
+};
 
-export interface LoginData {
+export type LoginData = {
   email: string;
   password: string;
-}
+};
 
-export interface User {
+export type User = {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-}
+};
 
-export interface AuthResponse {
+export type AuthResponse = {
   user: User;
   // Tokens are now in httpOnly cookies, not returned in response
-}
+};
 
 export const authService = {
   /**

@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import type { Timeframe, TradingSymbol } from '@/types/trading';
 import { TradingWorkspace } from '@/components/trading/TradingWorkspace';
-import { CoinService } from '@/services/coins/coinService';
 import { binanceService } from '@/services/binance/binanceApi';
+import { CoinService } from '@/services/coins/coinService';
 
 export const metadata: Metadata = {
   title: 'Workspace',
@@ -28,7 +28,7 @@ export default async function DashboardPage(props: DashboardPageProps) {
   });
 
   return (
-    <main className="flex h-full flex-1 flex-col overflow-hidden bg-white dark:bg-slate-950 px-4 py-4 md:px-8 md:py-6">
+    <main className="flex h-full flex-1 flex-col overflow-hidden bg-white px-4 py-4 md:px-8 md:py-6 dark:bg-slate-950">
       <TradingWorkspace defaultSymbol={symbol} defaultTimeframe={DEFAULT_TIMEFRAME} initialCandles={initialCandles} />
     </main>
   );

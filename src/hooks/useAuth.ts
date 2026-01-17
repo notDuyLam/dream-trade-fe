@@ -3,17 +3,17 @@ import { useRouter } from 'next/navigation';
 import { authService } from '@/services/auth/authService';
 import { useAuthStore } from '@/stores/authStore';
 
-interface RegisterInput {
+type RegisterInput = {
   email: string;
   password: string;
   firstName: string;
   lastName: string;
-}
+};
 
-interface LoginInput {
+type LoginInput = {
   email: string;
   password: string;
-}
+};
 
 /**
  * Hook để register user mới
@@ -24,7 +24,7 @@ export function useRegister() {
 
   return useMutation({
     mutationFn: (data: RegisterInput) => authService.register(data),
-    onSuccess: response => {
+    onSuccess: (response) => {
       // Chỉ lưu user info, tokens đã trong httpOnly cookie
       setAuth(response.user);
 
@@ -46,7 +46,7 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: (data: LoginInput) => authService.login(data),
-    onSuccess: response => {
+    onSuccess: (response) => {
       // Chỉ lưu user info, tokens đã trong httpOnly cookie
       setAuth(response.user);
 

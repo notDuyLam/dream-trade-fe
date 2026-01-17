@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { PostHogProvider } from '@/components/analytics/PostHogProvider';
-import { QueryProvider } from '@/libs/QueryProvider';
 import { AppProviders } from '@/components/providers/AppProviders';
+import { QueryProvider } from '@/libs/QueryProvider';
 import { AppConfig } from '@/utils/AppConfig';
 import '@/styles/global.css';
 
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="bg-white dark:bg-slate-950 text-slate-900 dark:text-slate-50 antialiased transition-colors duration-200">
+      <body className="bg-white text-slate-900 antialiased transition-colors duration-200 dark:bg-slate-950 dark:text-slate-50">
         <QueryProvider>
           <AppProviders>
             <PostHogProvider>{props.children}</PostHogProvider>

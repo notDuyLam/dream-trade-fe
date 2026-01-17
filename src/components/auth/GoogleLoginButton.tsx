@@ -1,22 +1,24 @@
 'use client';
 
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
+import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
-interface GoogleLoginButtonProps {
+type GoogleLoginButtonProps = {
   onSuccess?: (user: any) => void;
   onError?: (error: string) => void;
-}
+};
 
 export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleGoogleSuccess = (credentialResponse: any) => {
-    if (isLoading) return; // Prevent multiple clicks
+    if (isLoading) {
+      return;
+    } // Prevent multiple clicks
 
     console.log('🔐 Google Credential Response:', credentialResponse);
     console.log('📝 ID Token:', credentialResponse.credential);
@@ -35,14 +37,14 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
         idToken: credentialResponse.credential,
       }),
     })
-      .then(response => {
+      .then((response) => {
         console.log('📡 Backend Response Status:', response.status);
         if (!response.ok) {
           throw new Error('Google login failed');
         }
         return response.json();
       })
-      .then(data => {
+      .then((data) => {
         console.log('✅ Backend Response Data:', data);
         console.log('👤 User Info:', data.user);
         console.log('🔑 Access Token:', data.accessToken ? 'Received' : 'Missing');
@@ -64,7 +66,7 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
         // Redirect to dashboard
         router.push('/dashboard');
       })
-      .catch(error => {
+      .catch((error) => {
         console.error('Google login error:', error);
         if (onError) {
           onError(error instanceof Error ? error.message : 'Google login failed');
@@ -89,10 +91,10 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
 
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-      <div className="w-full relative">
+      <div className="relative w-full">
         {isLoading && (
-          <div className="absolute inset-0 bg-slate-900/50 rounded-md flex items-center justify-center z-10">
-            <div className="text-white text-sm">Loading...</div>
+          <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-slate-900/50">
+            <div className="text-sm text-white">Loading...</div>
           </div>
         )}
         <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} useOneTap text="continue_with" width="100%" />

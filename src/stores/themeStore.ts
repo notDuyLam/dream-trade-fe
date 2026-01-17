@@ -2,26 +2,32 @@ import { create } from 'zustand';
 
 export type Theme = 'light' | 'dark';
 
-interface ThemeState {
+type ThemeState = {
   theme: Theme;
   mounted: boolean;
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
   initializeTheme: () => void;
-}
+};
 
 const getInitialTheme = (): Theme => {
-  if (typeof window === 'undefined') return 'dark';
+  if (typeof window === 'undefined') {
+    return 'dark';
+  }
 
   const savedTheme = localStorage.getItem('theme') as Theme | null;
-  if (savedTheme) return savedTheme;
+  if (savedTheme) {
+    return savedTheme;
+  }
 
   const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
   return prefersDark ? 'dark' : 'light';
 };
 
 const applyThemeToDOM = (theme: Theme) => {
-  if (typeof window === 'undefined') return;
+  if (typeof window === 'undefined') {
+    return;
+  }
   const root = document.documentElement;
   root.classList.remove('dark', 'light');
   if (theme === 'dark') {

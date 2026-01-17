@@ -1,10 +1,11 @@
 'use client';
 
+import type { Language } from '@/contexts/LanguageContext';
+import { useRouter } from 'next/navigation';
+import { useEffect, useRef, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
-import { useLanguage, type Language } from '@/contexts/LanguageContext';
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 
 export function AccountDropdown() {
   const { user, isAuthenticated, clearAuth } = useAuthStore();
@@ -57,25 +58,27 @@ export function AccountDropdown() {
     <div className="relative" ref={dropdownRef}>
       {/* Avatar Button */}
       <button type="button" onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 rounded-full transition-all hover:opacity-80">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold text-sm">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-sm font-semibold text-white">
           {getInitials()}
         </div>
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl z-50">
+        <div className="absolute right-0 z-50 mt-2 w-72 rounded-2xl border border-slate-300 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
           {/* User Info */}
-          <div className="px-4 py-4 border-b border-slate-200 dark:border-slate-800">
+          <div className="border-b border-slate-200 px-4 py-4 dark:border-slate-800">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 text-white font-semibold">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-pink-500 font-semibold text-white">
                 {getInitials()}
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-slate-900 dark:text-white font-medium truncate">
-                  {user.firstName} {user.lastName}
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-slate-900 dark:text-white">
+                  {user.firstName}
+                  {' '}
+                  {user.lastName}
                 </p>
-                <p className="text-slate-600 dark:text-slate-400 text-sm truncate">{user.email}</p>
+                <p className="truncate text-sm text-slate-600 dark:text-slate-400">{user.email}</p>
               </div>
             </div>
           </div>
@@ -83,9 +86,9 @@ export function AccountDropdown() {
           {/* Menu Items */}
           <div className="py-2">
             {/* Theme Toggle */}
-            <div className="px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
+            <div className="px-4 py-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50">
               <div className="flex items-center justify-between">
-                <span className="text-slate-900 dark:text-white text-sm">{t('account.theme')}</span>
+                <span className="text-sm text-slate-900 dark:text-white">{t('account.theme')}</span>
                 <button
                   type="button"
                   onClick={handleThemeToggle}
@@ -103,13 +106,13 @@ export function AccountDropdown() {
             </div>
 
             {/* Language Selector */}
-            <div className="px-4 py-3 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors">
+            <div className="px-4 py-3 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/50">
               <div className="flex items-center justify-between">
-                <span className="text-slate-900 dark:text-white text-sm">{t('account.language')}</span>
+                <span className="text-sm text-slate-900 dark:text-white">{t('account.language')}</span>
                 <select
                   value={language}
                   onChange={e => handleLanguageChange(e.target.value)}
-                  className="bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white text-sm rounded-md px-3 py-1 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="rounded-md border border-slate-300 bg-slate-100 px-3 py-1 text-sm text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-white"
                 >
                   <option value="en">{t('language.en')}</option>
                   <option value="vi">{t('language.vi')}</option>
@@ -126,7 +129,7 @@ export function AccountDropdown() {
             <button
               type="button"
               onClick={handleLogout}
-              className="w-full px-4 py-3 text-left text-red-500 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800/50 transition-colors text-sm font-medium"
+              className="w-full px-4 py-3 text-left text-sm font-medium text-red-500 transition-colors hover:bg-slate-100 dark:text-red-400 dark:hover:bg-slate-800/50"
             >
               {t('account.logout')}
             </button>

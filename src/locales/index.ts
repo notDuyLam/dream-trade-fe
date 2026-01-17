@@ -1,8 +1,8 @@
 import type { Language } from '@/contexts/LanguageContext';
 import { en } from './en';
-import { vi } from './vi';
 import { ja } from './ja';
 import { ko } from './ko';
+import { vi } from './vi';
 
 const translations = {
   en,
@@ -17,4 +17,4 @@ export function getTranslation(lang: Language, key: string): string {
   return translation[key] || key;
 }
 
-export { en, vi, ja, ko };
+export { en, ja, ko, vi };

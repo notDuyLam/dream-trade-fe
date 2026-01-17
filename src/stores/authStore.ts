@@ -1,14 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-interface User {
+type User = {
   id: string;
   email: string;
   firstName: string;
   lastName: string;
-}
+};
 
-interface AuthState {
+type AuthState = {
   user: User | null;
   isAuthenticated: boolean;
 
@@ -16,7 +16,7 @@ interface AuthState {
   setAuth: (user: User) => void;
   clearAuth: () => void;
   updateUser: (user: Partial<User>) => void;
-}
+};
 
 export const useAuthStore = create<AuthState>()(
   persist(
@@ -47,6 +47,6 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
       }),
-    }
-  )
+    },
+  ),
 );

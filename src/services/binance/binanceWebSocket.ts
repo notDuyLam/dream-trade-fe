@@ -4,7 +4,7 @@ type Listener = (payload: RealtimePrice) => void;
 
 const BINANCE_WS_BASE = 'wss://stream.binance.com:9443/ws';
 
-interface BinanceTickerData {
+type BinanceTickerData = {
   e: string; // Event type
   E: number; // Event time
   s: string; // Symbol
@@ -15,7 +15,7 @@ interface BinanceTickerData {
   l: string; // Low price
   v: string; // Total traded base asset volume
   q: string; // Total traded quote asset volume
-}
+};
 
 /**
  * Binance WebSocket stream for real-time price updates
@@ -66,16 +66,16 @@ class BinancePriceStream {
       console.log(`[BinanceWS] Connected to ${symbol}`);
     };
 
-    ws.onmessage = event => {
+    ws.onmessage = (event) => {
       try {
         const data: BinanceTickerData = JSON.parse(event.data);
 
         const payload: RealtimePrice = {
           symbol,
-          price: parseFloat(data.c),
-          change24h: parseFloat(data.P),
-          high24h: parseFloat(data.h),
-          low24h: parseFloat(data.l),
+          price: Number.parseFloat(data.c),
+          change24h: Number.parseFloat(data.P),
+          high24h: Number.parseFloat(data.h),
+          low24h: Number.parseFloat(data.l),
           updatedAt: data.E,
         };
 
@@ -89,7 +89,7 @@ class BinancePriceStream {
       }
     };
 
-    ws.onerror = error => {
+    ws.onerror = (error) => {
       console.error(`[BinanceWS] Error for ${symbol}:`, error);
     };
 
@@ -114,7 +114,7 @@ class BinancePriceStream {
    * Disconnect all WebSocket connections
    */
   disconnectAll() {
-    this.sockets.forEach(ws => {
+    this.sockets.forEach((ws) => {
       ws.close();
     });
     this.sockets.clear();

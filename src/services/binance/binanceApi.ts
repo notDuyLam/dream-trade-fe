@@ -12,7 +12,7 @@ const timeframeToInterval: Record<Timeframe, string> = {
   '1d': '1d',
 };
 
-interface BinanceKline {
+type BinanceKline = {
   0: number; // Open time
   1: string; // Open
   2: string; // High
@@ -25,7 +25,7 @@ interface BinanceKline {
   9: string; // Taker buy base asset volume
   10: string; // Taker buy quote asset volume
   11: string; // Ignore
-}
+};
 
 /**
  * Fetch candlestick data from Binance API
@@ -47,11 +47,11 @@ export async function fetchBinanceCandles(params: { symbol: TradingSymbol; timef
     // Convert Binance kline format to CandleDataPoint
     return data.map(kline => ({
       time: Math.floor(kline[0] / 1000), // Convert ms to seconds
-      open: parseFloat(kline[1]),
-      high: parseFloat(kline[2]),
-      low: parseFloat(kline[3]),
-      close: parseFloat(kline[4]),
-      volume: parseFloat(kline[5]),
+      open: Number.parseFloat(kline[1]),
+      high: Number.parseFloat(kline[2]),
+      low: Number.parseFloat(kline[3]),
+      close: Number.parseFloat(kline[4]),
+      volume: Number.parseFloat(kline[5]),
     }));
   } catch (error) {
     console.error('Error fetching Binance candles:', error);
@@ -75,10 +75,10 @@ export async function fetchBinance24hTicker(symbol: TradingSymbol) {
 
     return {
       symbol,
-      price: parseFloat(data.lastPrice),
-      change24h: parseFloat(data.priceChangePercent),
-      high24h: parseFloat(data.highPrice),
-      low24h: parseFloat(data.lowPrice),
+      price: Number.parseFloat(data.lastPrice),
+      change24h: Number.parseFloat(data.priceChangePercent),
+      high24h: Number.parseFloat(data.highPrice),
+      low24h: Number.parseFloat(data.lowPrice),
       updatedAt: Date.now(),
     };
   } catch (error) {

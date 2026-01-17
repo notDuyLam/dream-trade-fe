@@ -61,8 +61,8 @@ export const TradingChart = (props: TradingChartProps) => {
       },
     });
 
-    const priceSeries =
-      props.chartType === 'candles'
+    const priceSeries
+      = props.chartType === 'candles'
         ? (chart.addSeries(CandlestickSeries, {
             upColor: '#10b981',
             downColor: '#ef4444',
@@ -92,8 +92,8 @@ export const TradingChart = (props: TradingChartProps) => {
     priceSeriesRef.current = priceSeries;
     volumeSeriesRef.current = volumeSeries;
 
-    const observer = new ResizeObserver(entries => {
-      entries.forEach(entry => {
+    const observer = new ResizeObserver((entries) => {
+      entries.forEach((entry) => {
         const { width, height } = entry.contentRect;
         chart.applyOptions({ width, height });
       });
@@ -177,9 +177,11 @@ export const TradingChart = (props: TradingChartProps) => {
       return;
     }
 
-    const unsubscribe = binancePriceStream.subscribe(props.symbol, price => {
+    const unsubscribe = binancePriceStream.subscribe(props.symbol, (price) => {
       const lastCandle = candles[candles.length - 1];
-      if (!lastCandle) return;
+      if (!lastCandle) {
+        return;
+      }
 
       const updatedCandle = {
         time: lastCandle.time as UTCTimestamp,

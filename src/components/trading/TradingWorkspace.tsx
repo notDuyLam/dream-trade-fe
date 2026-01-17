@@ -1,22 +1,22 @@
 'use client';
 
 import type { CandleDataPoint, ChartDisplay, RealtimePrice, Timeframe, TradingSymbol } from '@/types/trading';
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { CoinService } from '@/services/coins/coinService';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { binanceService } from '@/services/binance/binanceApi';
 import { binancePriceStream } from '@/services/binance/binanceWebSocket';
+import { CoinService } from '@/services/coins/coinService';
 import { formatPrice, roundPrice } from '@/utils/pricePrecision';
-import { useLanguage } from '@/contexts/LanguageContext';
+import { AccountInfo } from './AccountInfo';
 import { SymbolSelector } from './SymbolSelector';
 import { TimeframeSelector } from './TimeframeSelector';
-import { AccountInfo } from './AccountInfo';
+
+import { TradingChart } from './TradingChart';
 
 const AccountDropdown = dynamic(() => import('@/components/auth/AccountDropdown').then(mod => ({ default: mod.AccountDropdown })), {
   ssr: false,
 });
-
-import { TradingChart } from './TradingChart';
 
 type TradingWorkspaceProps = {
   defaultSymbol: TradingSymbol;
@@ -91,7 +91,7 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
   const displayQuote = quote ?? fallback;
 
   useEffect(() => {
-    const unsubscribe = binancePriceStream.subscribe(symbol, payload => {
+    const unsubscribe = binancePriceStream.subscribe(symbol, (payload) => {
       setQuote(payload);
       // Don't update candles here - let TradingChart handle real-time updates
     });
@@ -105,12 +105,12 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
     }
 
     const unsubscribers = watchlistSymbols.map(itemSymbol =>
-      binancePriceStream.subscribe(itemSymbol, payload => {
+      binancePriceStream.subscribe(itemSymbol, (payload) => {
         setWatchlistQuotes(prev => ({
           ...prev,
           [itemSymbol]: payload,
         }));
-      })
+      }),
     );
 
     return () => {
@@ -130,14 +130,14 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
 
   return (
     <div className="flex h-full flex-col gap-6  bg-white dark:bg-zinc-900">
-      <nav className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/50 px-6 py-4">
+      <nav className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-300 bg-slate-100 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/50">
         <div>
-          <p className="text-[11px] tracking-[0.4em] text-emerald-600 dark:text-emerald-400 uppercase">{t('trading.dreamTrade')}</p>
+          <p className="text-[11px] tracking-[0.4em] text-emerald-600 uppercase dark:text-emerald-400">{t('trading.dreamTrade')}</p>
           <h1 className="text-xl font-semibold text-slate-900 dark:text-white">{t('trading.intelligence')}</h1>
         </div>
 
         <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
-          <button type="button" className="rounded-full border border-slate-400 dark:border-slate-700 px-4 py-1.5 text-slate-900 dark:text-white">
+          <button type="button" className="rounded-full border border-slate-400 px-4 py-1.5 text-slate-900 dark:border-slate-700 dark:text-white">
             {t('nav.workspace')}
           </button>
           <button type="button" className="rounded-full border border-transparent px-4 py-1.5 hover:text-slate-900 dark:hover:text-white">
@@ -154,7 +154,7 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
       </nav>
 
       <div className="grid grow gap-6 overflow-hidden lg:grid-cols-[3fr_1fr]">
-        <section className="flex h-full flex-col rounded-[32px] border border-slate-300 dark:border-slate-900/80 bg-slate-50 dark:bg-slate-950/70 p-6">
+        <section className="flex h-full flex-col rounded-[32px] border border-slate-300 bg-slate-50 p-6 dark:border-slate-900/80 dark:bg-slate-950/70">
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -185,23 +185,27 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <TimeframeSelector value={timeframe} onChange={handleTimeframeChange} />
               <p className="text-xs text-slate-400 dark:text-slate-500">
-                {t('trading.updated')}: {displayQuote ? new Date(displayQuote.updatedAt).toLocaleTimeString() : '--'}
+                {t('trading.updated')}
+                :
+                {displayQuote ? new Date(displayQuote.updatedAt).toLocaleTimeString() : '--'}
               </p>
             </div>
           </div>
 
           <div className="flex grow flex-col">
-            {isLoading ? (
-              <div className="flex grow items-center justify-center rounded-[28px] border border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/40 text-sm tracking-[0.4em] text-slate-500 uppercase">
-                {t('trading.loadingData')}
-              </div>
-            ) : (
-              <TradingChart candles={candles} symbol={symbol} timeframe={timeframe} chartType={chartType} theme="dark" className="h-full grow" />
-            )}
+            {isLoading
+              ? (
+                  <div className="flex grow items-center justify-center rounded-[28px] border border-slate-300 bg-slate-100 text-sm tracking-[0.4em] text-slate-500 uppercase dark:border-slate-800 dark:bg-slate-950/40">
+                    {t('trading.loadingData')}
+                  </div>
+                )
+              : (
+                  <TradingChart candles={candles} symbol={symbol} timeframe={timeframe} chartType={chartType} theme="dark" className="h-full grow" />
+                )}
           </div>
         </section>
 
-        <aside className="flex h-full flex-col gap-4 rounded-[32px] border border-slate-300 dark:border-slate-900/80 bg-slate-100 dark:bg-slate-950/60 p-4">
+        <aside className="flex h-full flex-col gap-4 rounded-[32px] border border-slate-300 bg-slate-100 p-4 dark:border-slate-900/80 dark:bg-slate-950/60">
           {/* Account Info Section */}
           <AccountInfo />
 
@@ -213,7 +217,7 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
               </div>
             </div>
             <div className="mt-4 flex-1 space-y-2 overflow-y-auto pr-1">
-              {watchlistSymbols.map(item => {
+              {watchlistSymbols.map((item) => {
                 const data = watchlistQuotes[item];
                 const changeColorItem = data?.change24h ? (data.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400') : 'text-slate-500';
                 return (
@@ -242,7 +246,7 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
             </div>
           </section>
 
-          <section className="flex-shrink-0 space-y-4 rounded-2xl border border-slate-300 dark:border-slate-800 bg-slate-100 dark:bg-slate-950/80 p-4">
+          <section className="flex-shrink-0 space-y-4 rounded-2xl border border-slate-300 bg-slate-100 p-4 dark:border-slate-800 dark:bg-slate-950/80">
             <div>
               <p className="text-[11px] tracking-[0.35em] text-slate-500 uppercase">{t('trading.details')}</p>
               <h3 className="text-xl font-semibold text-slate-900 dark:text-white">{symbol}</h3>
@@ -280,7 +284,9 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
               </div>
             </dl>
             <p className="text-xs text-slate-500">
-              {t('trading.dataUpdatedAt')}: {displayQuote ? new Date(displayQuote.updatedAt).toLocaleTimeString() : '--'}
+              {t('trading.dataUpdatedAt')}
+              :
+              {displayQuote ? new Date(displayQuote.updatedAt).toLocaleTimeString() : '--'}
             </p>
           </section>
         </aside>
