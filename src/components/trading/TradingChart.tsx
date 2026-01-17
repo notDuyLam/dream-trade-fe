@@ -1,27 +1,10 @@
 'use client';
 
-import type {
-  HistogramData,
-  IChartApi,
-  ISeriesApi,
-  UTCTimestamp,
-} from 'lightweight-charts';
-import type {
-  CandleDataPoint,
-  ChartDisplay,
-  ChartTheme,
-  Timeframe,
-  TradingSymbol,
-} from '@/types/trading';
-import {
-  CandlestickSeries,
-  ColorType,
-  createChart,
-  HistogramSeries,
-  LineSeries,
-} from 'lightweight-charts';
+import type { HistogramData, IChartApi, ISeriesApi, UTCTimestamp } from 'lightweight-charts';
+import type { CandleDataPoint, ChartDisplay, ChartTheme, Timeframe, TradingSymbol } from '@/types/trading';
+import { CandlestickSeries, ColorType, createChart, HistogramSeries, LineSeries } from 'lightweight-charts';
 import { useEffect, useRef } from 'react';
-import { priceStream } from '@/services/websocket/priceStream';
+import { binancePriceStream } from '@/services/binance/binanceWebSocket';
 
 type TradingChartProps = {
   candles: CandleDataPoint[];
@@ -43,17 +26,12 @@ const themeMap = {
     text: '#0f172a',
     grid: '#e2e8f0',
   },
-} satisfies Record<
-  ChartTheme,
-  { background: string; text: string; grid: string }
->;
+} satisfies Record<ChartTheme, { background: string; text: string; grid: string }>;
 
 export const TradingChart = (props: TradingChartProps) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const chartRef = useRef<IChartApi | null>(null);
-  const priceSeriesRef = useRef<
-    ISeriesApi<'Candlestick'> | ISeriesApi<'Line'> | null
-  >(null);
+  const priceSeriesRef = useRef<ISeriesApi<'Candlestick'> | ISeriesApi<'Line'> | null>(null);
   const volumeSeriesRef = useRef<ISeriesApi<'Histogram'> | null>(null);
 
   useEffect(() => {
@@ -193,33 +171,41 @@ export const TradingChart = (props: TradingChartProps) => {
 
   useEffect(() => {
     const priceSeries = priceSeriesRef.current;
+    const candles = props.candles;
 
-    if (!priceSeries) {
+    if (!priceSeries || candles.length === 0) {
       return;
     }
 
-    const unsubscribe = priceStream.subscribe(props.symbol, (price) => {
+    const unsubscribe = binancePriceStream.subscribe(props.symbol, (price) => {
+      const lastCandle = candles[candles.length - 1];
+      if (!lastCandle) {
+        return;
+      }
+
+      const updatedCandle = {
+        time: lastCandle.time as UTCTimestamp,
+        open: lastCandle.open,
+        high: Math.max(lastCandle.high, price.price),
+        low: Math.min(lastCandle.low, price.price),
+        close: price.price,
+      };
+
       if (props.chartType === 'candles') {
-        (priceSeries as ISeriesApi<'Candlestick'>).update({
-          time: Math.floor(price.updatedAt / 1000) as UTCTimestamp,
-          open: price.price,
-          high: price.price,
-          low: price.price,
-          close: price.price,
-        });
+        (priceSeries as ISeriesApi<'Candlestick'>).update(updatedCandle);
       } else {
         (priceSeries as ISeriesApi<'Line'>).update({
-          time: Math.floor(price.updatedAt / 1000) as UTCTimestamp,
+          time: lastCandle.time as UTCTimestamp,
           value: price.price,
         });
       }
     });
 
     return unsubscribe;
-  }, [props.symbol, props.chartType]);
+  }, [props.symbol, props.chartType, props.candles]);
 
   const containerClass = [
-    'rounded-2xl border border-slate-800/60 bg-slate-950/40 p-2 min-h-[420px] lg:min-h-[560px]',
+    'rounded-2xl border border-slate-300 dark:border-slate-800/60 bg-slate-100 dark:bg-slate-950/40 p-2 min-h-[420px] lg:min-h-[560px]',
     props.className ?? '',
   ]
     .filter(Boolean)
@@ -227,10 +213,7 @@ export const TradingChart = (props: TradingChartProps) => {
 
   return (
     <div className={containerClass}>
-      <div
-        className="h-full w-full rounded-xl bg-slate-950"
-        ref={containerRef}
-      />
+      <div className="h-full w-full rounded-xl bg-slate-200 dark:bg-slate-950" ref={containerRef} />
     </div>
   );
 };

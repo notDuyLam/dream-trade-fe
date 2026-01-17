@@ -16,13 +16,9 @@ const getApiBaseUrl = () => {
 
 const isAbsoluteUrl = (url: string) => /^https?:\/\//.test(url);
 
-export async function apiRequest<TResponse, TBody = unknown>(
-  options: RequestOptions<TBody>,
-): Promise<TResponse> {
+export async function apiRequest<TResponse, TBody = unknown>(options: RequestOptions<TBody>): Promise<TResponse> {
   const baseUrl = getApiBaseUrl();
-  const targetUrl = isAbsoluteUrl(options.path)
-    ? options.path
-    : `${baseUrl}${options.path}`;
+  const targetUrl = isAbsoluteUrl(options.path) ? options.path : `${baseUrl}${options.path}`;
 
   const response = await fetch(targetUrl, {
     method: options.method ?? 'GET',
@@ -30,10 +26,9 @@ export async function apiRequest<TResponse, TBody = unknown>(
     headers: {
       'Content-Type': 'application/json',
     },
+    credentials: 'include', // Important: Send cookies with requests
     cache: options.cache ?? 'no-store',
-    next: options.revalidate === false
-      ? undefined
-      : { revalidate: options.revalidate ?? 0 },
+    next: options.revalidate === false ? undefined : { revalidate: options.revalidate ?? 0 },
   });
 
   if (!response.ok) {
