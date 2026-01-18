@@ -22,12 +22,9 @@ export const VipGuard = ({
   const [hasAccess, setHasAccess] = useState(false);
 
   useEffect(() => {
-    // Mock user ID - in real app, get from auth context
-    const mockUserId = 'default-user';
-
     void (async () => {
       try {
-        const userIsVip = await isVip(mockUserId);
+        const userIsVip = await isVip();
         setHasAccess(userIsVip);
         if (!userIsVip && redirectTo) {
           // Optionally redirect instead of showing fallback

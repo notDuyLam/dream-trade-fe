@@ -14,6 +14,12 @@ const baseConfig: NextConfig = {
   experimental: {
     turbopackFileSystemCacheForDev: true,
   },
+  // Note: In Next.js 16, ESLint is no longer run during builds automatically
+  // ESLint will only run if you explicitly call `npm run lint`
+  // Disable TypeScript errors during builds (optional)
+  typescript: {
+    ignoreBuildErrors: false, // Set to true if you also want to ignore TypeScript errors
+  },
 };
 
 let enhancedConfig = baseConfig;

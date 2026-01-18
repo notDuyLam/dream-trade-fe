@@ -1,8 +1,9 @@
 'use client';
 
+import type { PricingPlan } from '@/types/subscription';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getPlanById, upgradeToVip } from '@/services/subscription/subscriptionService';
 
 export default function CheckoutSuccessPage() {
@@ -10,11 +11,20 @@ export default function CheckoutSuccessPage() {
   const router = useRouter();
   const [isProcessing, setIsProcessing] = useState(true);
 
-  const plan = useMemo(() => {
+  const [plan, setPlan] = useState<PricingPlan | null>(null);
+
+  useEffect(() => {
     const planId = searchParams.get('plan') ?? 'vip';
-    const selectedPlan = getPlanById(planId);
-    return selectedPlan;
-  }, [searchParams]);
+    void (async () => {
+      try {
+        const selectedPlan = await getPlanById(planId);
+        setPlan(selectedPlan || null);
+      } catch (error) {
+        console.error('Failed to load plan:', error);
+        router.push('/pricing');
+      }
+    })();
+  }, [searchParams, router]);
 
   useEffect(() => {
     if (!plan) {
@@ -27,14 +37,16 @@ export default function CheckoutSuccessPage() {
       return;
     }
 
-    // Mock: Update subscription status
-    // In a real app, this would be handled by the backend after payment confirmation
+    // Update subscription status after payment confirmation
     if (plan.id === 'vip') {
-      // Mock user ID - in real app, get from auth context
-      const mockUserId = 'default-user';
-      void upgradeToVip(mockUserId).then(() => {
-        setIsProcessing(false);
-      });
+      void upgradeToVip()
+        .then(() => {
+          setIsProcessing(false);
+        })
+        .catch((error) => {
+          console.error('Failed to upgrade subscription:', error);
+          setIsProcessing(false);
+        });
       return;
     }
 

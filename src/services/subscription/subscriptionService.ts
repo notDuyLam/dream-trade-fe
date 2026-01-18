@@ -1,122 +1,93 @@
-import type { PricingPlan, SubscriptionInfo } from '@/types/subscription';
-import { mockBillingHistory, mockSubscriptions, pricingPlans } from './mockSubscriptionData';
+import type { BillingHistoryItem, PricingPlan, SubscriptionInfo } from '@/types/subscription';
+import { apiRequest } from '../api/client';
+import { pricingPlans } from './mockSubscriptionData';
 
 /**
- * Get user subscription
- * Currently uses mock data, ready to replace with API call
+ * Get current user subscription
+ * API automatically gets userId from JWT token
  */
-export async function getUserSubscription(userId: string): Promise<SubscriptionInfo | null> {
-  // Mock implementation
-  const subscription = mockSubscriptions[userId] ?? mockSubscriptions['default-user'];
-
-  // Future: Replace with API call
-  // return apiRequest<SubscriptionInfo>({
-  //   path: `/api/subscriptions/${userId}`,
-  //   method: 'GET',
-  // });
-
-  return subscription ?? null;
+export async function getUserSubscription(): Promise<SubscriptionInfo> {
+  return apiRequest<SubscriptionInfo>({
+    path: '/subscriptions/me',
+    method: 'GET',
+  });
 }
 
 /**
- * Check if user is VIP
+ * Check if current user is VIP
  */
-export async function isVip(userId: string): Promise<boolean> {
-  const subscription = await getUserSubscription(userId);
-  return subscription?.plan === 'vip' && subscription?.status === 'active';
+export async function isVip(): Promise<boolean> {
+  try {
+    const subscription = await getUserSubscription();
+    return subscription?.plan === 'vip' && subscription?.status === 'active';
+  } catch (error) {
+    console.error('Failed to check VIP status:', error);
+    return false;
+  }
 }
 
 /**
  * Get available pricing plans
  */
-export function getAvailablePlans(): PricingPlan[] {
-  return pricingPlans;
+export async function getAvailablePlans(): Promise<PricingPlan[]> {
+  try {
+    return apiRequest<PricingPlan[]>({
+      path: '/subscriptions/plans',
+      method: 'GET',
+    });
+  } catch (error) {
+    console.error('Failed to fetch plans, using fallback:', error);
+    // Fallback to hardcoded plans if API fails
+    return pricingPlans;
+  }
 }
 
 /**
  * Get plan by ID
  */
-export function getPlanById(planId: string): PricingPlan | undefined {
-  return pricingPlans.find(plan => plan.id === planId);
-}
-
-/**
- * Upgrade user to VIP
- * Currently uses mock data, ready to replace with API call
- */
-export async function upgradeToVip(userId: string): Promise<SubscriptionInfo> {
-  // Mock implementation
-  const now = new Date().toISOString();
-  const nextYear = new Date();
-  nextYear.setFullYear(nextYear.getFullYear() + 1);
-
-  const newSubscription: SubscriptionInfo = {
-    id: `sub-vip-${Date.now()}`,
-    userId,
-    plan: 'vip',
-    status: 'active',
-    startDate: now,
-    endDate: nextYear.toISOString(),
-    renewalDate: nextYear.toISOString(),
-    createdAt: now,
-    updatedAt: now,
-  };
-
-  // Update mock data
-  mockSubscriptions[userId] = newSubscription;
-
-  // Future: Replace with API call
-  // return apiRequest<SubscriptionInfo>({
-  //   path: '/api/subscriptions/upgrade',
-  //   method: 'POST',
-  //   body: { plan: 'vip' },
-  // });
-
-  return newSubscription;
-}
-
-/**
- * Cancel subscription
- * Currently uses mock data, ready to replace with API call
- */
-export async function cancelSubscription(userId: string): Promise<SubscriptionInfo> {
-  const subscription = await getUserSubscription(userId);
-  if (!subscription) {
-    throw new Error('Subscription not found');
+export async function getPlanById(planId: string): Promise<PricingPlan | undefined> {
+  try {
+    return apiRequest<PricingPlan>({
+      path: `/subscriptions/plans/${planId}`,
+      method: 'GET',
+    });
+  } catch (error) {
+    console.error('Failed to fetch plan, using fallback:', error);
+    // Fallback to hardcoded plans if API fails
+    return pricingPlans.find(plan => plan.id === planId);
   }
-
-  // Mock implementation - downgrade to free
-  const updatedSubscription: SubscriptionInfo = {
-    ...subscription,
-    plan: 'free',
-    status: 'cancelled',
-    updatedAt: new Date().toISOString(),
-  };
-
-  mockSubscriptions[userId] = updatedSubscription;
-
-  // Future: Replace with API call
-  // return apiRequest<SubscriptionInfo>({
-  //   path: `/api/subscriptions/${userId}/cancel`,
-  //   method: 'POST',
-  // });
-
-  return updatedSubscription;
 }
 
 /**
- * Get billing history for user
- * Currently uses mock data, ready to replace with API call
+ * Upgrade current user to VIP
+ * API automatically gets userId from JWT token
  */
-export async function getBillingHistory(userId: string) {
-  // Mock implementation
-  const history = mockBillingHistory[userId] ?? [];
+export async function upgradeToVip(): Promise<SubscriptionInfo> {
+  return apiRequest<SubscriptionInfo>({
+    path: '/subscriptions/upgrade',
+    method: 'POST',
+    body: { plan: 'vip' },
+  });
+}
 
-  // Future: Replace with API call
-  // return apiRequest({
-  //   path: `/api/subscriptions/${userId}/billing-history`,
-  //   method: 'GET',
-  // });
+/**
+ * Cancel current user subscription
+ * API automatically gets userId from JWT token
+ */
+export async function cancelSubscription(): Promise<SubscriptionInfo> {
+  return apiRequest<SubscriptionInfo>({
+    path: '/subscriptions/cancel',
+    method: 'POST',
+  });
+}
 
-  return history;
+/**
+ * Get billing history for current user
+ * API automatically gets userId from JWT token
+ */
+export async function getBillingHistory(): Promise<BillingHistoryItem[]> {
+  return apiRequest<BillingHistoryItem[]>({
+    path: '/subscriptions/billing-history',
+    method: 'GET',
+  });
 }

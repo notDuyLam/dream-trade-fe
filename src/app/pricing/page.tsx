@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   description: 'Choose the perfect plan for your trading needs',
 };
 
-export default function PricingPage() {
-  const plans = getAvailablePlans();
+export default async function PricingPage() {
+  const plans = await getAvailablePlans();
 
   return (
     <main className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-7xl flex-col gap-16 px-4 py-16">

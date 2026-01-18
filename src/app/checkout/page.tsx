@@ -1,8 +1,9 @@
 'use client';
 
 import type { CheckoutFormData } from '@/components/checkout/CheckoutForm';
+import type { PricingPlan } from '@/types/subscription';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { CheckoutForm } from '@/components/checkout/CheckoutForm';
 import { getPlanById } from '@/services/subscription/subscriptionService';
 
@@ -10,11 +11,26 @@ export default function CheckoutPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const plan = useMemo(() => {
+  const [plan, setPlan] = useState<PricingPlan | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
     const planId = searchParams.get('plan') ?? 'vip';
-    const selectedPlan = getPlanById(planId);
-    return selectedPlan;
-  }, [searchParams]);
+    void (async () => {
+      try {
+        const selectedPlan = await getPlanById(planId);
+        if (!selectedPlan) {
+          router.push('/pricing');
+          return;
+        }
+        setPlan(selectedPlan);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to load plan:', error);
+        router.push('/pricing');
+      }
+    })();
+  }, [searchParams, router]);
 
   useEffect(() => {
     if (!plan) {
@@ -29,7 +45,7 @@ export default function CheckoutPage() {
     // Payment processed successfully
   };
 
-  if (!plan) {
+  if (isLoading || !plan) {
     return (
       <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="text-slate-400">Loading...</div>

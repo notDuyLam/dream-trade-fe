@@ -14,14 +14,11 @@ export default function BillingSettingsPage() {
   const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
-    // Mock user ID - in real app, get from auth context
-    const mockUserId = 'default-user';
-
     void (async () => {
       try {
         const [sub, history] = await Promise.all([
-          getUserSubscription(mockUserId),
-          getBillingHistory(mockUserId),
+          getUserSubscription(),
+          getBillingHistory(),
         ]);
         setSubscription(sub);
         setBillingHistory(history);
@@ -46,9 +43,7 @@ export default function BillingSettingsPage() {
 
     setIsCancelling(true);
     try {
-      // Mock user ID - in real app, get from auth context
-      const mockUserId = 'default-user';
-      const updated = await cancelSubscription(mockUserId);
+      const updated = await cancelSubscription();
       setSubscription(updated);
     } catch (error) {
       console.error('Failed to cancel subscription:', error);
