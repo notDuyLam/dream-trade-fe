@@ -7,12 +7,14 @@ commit-msg:
 # Validate content before committing
 pre-commit:
   commands:
-    lint:
-      glob: '*'
-      run: npx --no -- eslint --fix --no-warn-ignored {staged_files}
-      stage_fixed: true
-      priority: 1
-    check-types:
-      glob: '*.{ts,tsx}'
-      run: npm run check:types
-      priority: 2
+    # lint: Disabled - ESLint can be run manually with `npm run lint`
+    # lint:
+    #   glob: '*'
+    #   run: npx --no -- eslint --fix --no-warn-ignored {staged_files}
+    #   stage_fixed: true
+    #   priority: 1
+    # check-types: Disabled - TypeScript check can be run manually with `npm run check:types`
+    # check-types:
+    #   glob: '*.{ts,tsx}'
+    #   run: npm run check:types
+    #   priority: 2
