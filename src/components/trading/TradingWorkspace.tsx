@@ -4,9 +4,8 @@ import type { CandleDataPoint, ChartDisplay, RealtimePrice, Timeframe, TradingSy
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { binanceService } from '@/services/binance/binanceApi';
-import { binancePriceStream } from '@/services/binance/binanceWebSocket';
 import { CoinService } from '@/services/coins/coinService';
+import { marketService } from '@/services/market/marketService';
 import { formatPrice, roundPrice } from '@/utils/pricePrecision';
 import { AccountInfo } from './AccountInfo';
 import { SymbolSelector } from './SymbolSelector';
@@ -36,7 +35,7 @@ const getWatchlistSymbols = (): TradingSymbol[] => {
 };
 
 const fallbackQuote = (symbol: TradingSymbol, candle?: CandleDataPoint): RealtimePrice | null => {
-  if (!candle) {
+  if (!candle || !candle.close || !candle.high || !candle.low) {
     return null;
   }
 
@@ -64,13 +63,66 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
   const updateWorkspace = useCallback(async (nextSymbol: TradingSymbol, nextTimeframe: Timeframe) => {
     setIsLoading(true);
     try {
-      const data = await binanceService.fetchCandles({
-        symbol: nextSymbol,
-        timeframe: nextTimeframe,
-      });
-      setCandles(data);
+      const history = await marketService.getHistory(nextSymbol, nextTimeframe, 1000);
+      const newCandles = history.data.map((candle: any) => {
+        // Binance returns array format: [timestamp, open, high, low, close, volume, ...]
+        // Or object format: { timestamp, open, high, low, close, volume }
+        let timeInSeconds: number;
+        let open: number, high: number, low: number, close: number, volume: number;
+
+        if (Array.isArray(candle)) {
+          // Array format from Binance
+          timeInSeconds = Math.floor(candle[0] / 1000); // timestamp in ms
+          open = Number.parseFloat(candle[1]);
+          high = Number.parseFloat(candle[2]);
+          low = Number.parseFloat(candle[3]);
+          close = Number.parseFloat(candle[4]);
+          volume = Number.parseFloat(candle[5]);
+        } else {
+          // Object format
+          if (typeof candle.timestamp === 'number') {
+            timeInSeconds = Math.floor(candle.timestamp / 1000);
+          } else {
+            const date = new Date(candle.timestamp);
+            timeInSeconds = Math.floor(date.getTime() / 1000);
+          }
+          open = candle.open;
+          high = candle.high;
+          low = candle.low;
+          close = candle.close;
+          volume = candle.volume;
+        }
+
+        return {
+          time: timeInSeconds,
+          open,
+          high,
+          low,
+          close,
+          volume,
+        };
+      }).filter((candle: CandleDataPoint) =>
+        // Check that all values are defined and not NaN
+        candle.time !== undefined
+        && candle.open !== undefined
+        && candle.high !== undefined
+        && candle.low !== undefined
+        && candle.close !== undefined
+        && candle.volume !== undefined
+        && !Number.isNaN(candle.time)
+        && !Number.isNaN(candle.open)
+        && !Number.isNaN(candle.high)
+        && !Number.isNaN(candle.low)
+        && !Number.isNaN(candle.close)
+        && !Number.isNaN(candle.volume)
+        && candle.time > 0
+        && candle.open > 0
+        && candle.close > 0,
+      ).sort((a: CandleDataPoint, b: CandleDataPoint) => a.time - b.time);
+
+      setCandles(newCandles);
     } catch (error) {
-      console.error('Failed to fetch candles:', error);
+      console.error('Failed to fetch history:', error);
     }
     setIsLoading(false);
   }, []);
@@ -90,31 +142,82 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
   const fallback = useMemo(() => fallbackQuote(symbol, candles.at(-1)), [symbol, candles]);
   const displayQuote = quote ?? fallback;
 
+  // REAL-TIME CURRENT SYMBOL QUOTE using 1-SECOND POLLING
   useEffect(() => {
-    const unsubscribe = binancePriceStream.subscribe(symbol, (payload) => {
-      setQuote(payload);
-      // Don't update candles here - let TradingChart handle real-time updates
-    });
+    const fetchCurrentQuote = async () => {
+      try {
+        const tickers = await marketService.getTicker24hr([symbol]);
 
-    return unsubscribe;
+        if (tickers && tickers.length > 0) {
+          const ticker = tickers[0];
+          setQuote({
+            symbol,
+            price: Number.parseFloat(ticker.lastPrice || ticker.c),
+            change24h: Number.parseFloat(ticker.priceChangePercent || ticker.P),
+            high24h: Number.parseFloat(ticker.highPrice || ticker.h),
+            low24h: Number.parseFloat(ticker.lowPrice || ticker.l),
+            updatedAt: Date.now(),
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch current quote:', error);
+      }
+    };
+
+    // Fetch immediately
+    void fetchCurrentQuote();
+
+    // Set up 1-second interval
+    const intervalId = setInterval(() => {
+      void fetchCurrentQuote();
+    }, 1000); // Update every 1 second
+
+    return () => {
+      clearInterval(intervalId);
+    };
   }, [symbol]);
 
+  // REAL-TIME WATCHLIST UPDATES using 1-SECOND POLLING
   useEffect(() => {
     if (watchlistSymbols.length === 0) {
       return;
     }
 
-    const unsubscribers = watchlistSymbols.map(itemSymbol =>
-      binancePriceStream.subscribe(itemSymbol, (payload) => {
-        setWatchlistQuotes(prev => ({
-          ...prev,
-          [itemSymbol]: payload,
-        }));
-      }),
-    );
+    // Initial fetch
+    const fetchWatchlistPrices = async () => {
+      try {
+        const tickers = await marketService.getTicker24hr(watchlistSymbols);
+
+        const newQuotes: Partial<Record<TradingSymbol, RealtimePrice | null>> = {};
+
+        tickers.forEach((ticker: any) => {
+          const symbolKey = ticker.symbol as TradingSymbol;
+          newQuotes[symbolKey] = {
+            symbol: symbolKey,
+            price: Number.parseFloat(ticker.lastPrice || ticker.c),
+            change24h: Number.parseFloat(ticker.priceChangePercent || ticker.P),
+            high24h: Number.parseFloat(ticker.highPrice || ticker.h),
+            low24h: Number.parseFloat(ticker.lowPrice || ticker.l),
+            updatedAt: Date.now(),
+          };
+        });
+
+        setWatchlistQuotes(newQuotes);
+      } catch (error) {
+        console.error('Failed to fetch watchlist prices:', error);
+      }
+    };
+
+    // Fetch immediately
+    void fetchWatchlistPrices();
+
+    // Set up 1-second interval
+    const intervalId = setInterval(() => {
+      void fetchWatchlistPrices();
+    }, 1000); // Update every 1 second
 
     return () => {
-      unsubscribers.forEach(unsub => unsub());
+      clearInterval(intervalId);
     };
   }, [watchlistSymbols]);
 
@@ -238,12 +341,15 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
                     </div>
                     <div className="text-right">
                       <p className="text-base font-semibold">{formatPrice(data?.price)}</p>
-                      <p className={`text-xs ${changeColorItem}`}>{data ? `${data.change24h >= 0 ? '+' : ''}${data.change24h.toFixed(2)}%` : '--'}</p>
+                      <p className={`text-xs ${changeColorItem}`}>
+                        {data && typeof data.change24h === 'number'
+                          ? `${data.change24h >= 0 ? '+' : ''}${data.change24h.toFixed(2)}%`
+                          : '--'}
+                      </p>
                     </div>
                   </button>
                 );
-              })}
-            </div>
+              })}</div>
           </section>
 
           <section className="flex-shrink-0 space-y-4 rounded-2xl border border-slate-300 bg-slate-100 p-4 dark:border-slate-800 dark:bg-slate-950/80">
@@ -254,7 +360,9 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
             <div className="flex items-end gap-3">
               <span className="text-4xl font-semibold text-slate-900 dark:text-white">{formatPrice(displayQuote?.price)}</span>
               <span className={`text-sm font-semibold ${changeColor}`}>
-                {displayQuote ? `${displayQuote.change24h >= 0 ? '+' : ''}${displayQuote.change24h.toFixed(2)}%` : '--'}
+                {displayQuote && typeof displayQuote.change24h === 'number'
+                  ? `${displayQuote.change24h >= 0 ? '+' : ''}${displayQuote.change24h.toFixed(2)}%`
+                  : '--'}
               </span>
             </div>
             <dl className="grid grid-cols-2 gap-4 text-sm">
@@ -276,7 +384,9 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
               </div>
               <div>
                 <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">{t('trading.volume')}</dt>
-                <dd className="mt-1 text-slate-900 dark:text-white">{latestCandle ? `${latestCandle.volume.toFixed(0)}` : '--'}</dd>
+                <dd className="mt-1 text-slate-900 dark:text-white">
+                  {latestCandle?.volume !== undefined && typeof latestCandle.volume === 'number' ? `${latestCandle.volume.toFixed(0)}` : '--'}
+                </dd>
               </div>
               <div>
                 <dt className="text-xs tracking-[0.3em] text-slate-500 uppercase">{t('trading.timeframe')}</dt>
