@@ -1,21 +1,18 @@
 'use client';
 
 import type { CandleDataPoint, ChartDisplay, RealtimePrice, Timeframe, TradingSymbol } from '@/types/trading';
-import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { DashboardNav } from '@/components/navigation/DashboardNav';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { CoinService } from '@/services/coins/coinService';
 import { marketService } from '@/services/market/marketService';
 import { formatPrice, roundPrice } from '@/utils/pricePrecision';
 import { AccountInfo } from './AccountInfo';
 import { SymbolSelector } from './SymbolSelector';
+
 import { TimeframeSelector } from './TimeframeSelector';
 
 import { TradingChart } from './TradingChart';
-
-const AccountDropdown = dynamic(() => import('@/components/auth/AccountDropdown').then(mod => ({ default: mod.AccountDropdown })), {
-  ssr: false,
-});
 
 type TradingWorkspaceProps = {
   defaultSymbol: TradingSymbol;
@@ -63,7 +60,9 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
   const updateWorkspace = useCallback(async (nextSymbol: TradingSymbol, nextTimeframe: Timeframe) => {
     setIsLoading(true);
     try {
-      const history = await marketService.getHistory(nextSymbol, nextTimeframe, 1000);
+      // Fetch native history for the selected timeframe (including 1s)
+      const fetchLimit = nextTimeframe === '1s' ? 300 : 1000;
+      const history = await marketService.getHistory(nextSymbol, nextTimeframe, fetchLimit);
       const newCandles = history.data.map((candle: any) => {
         // Binance returns array format: [timestamp, open, high, low, close, volume, ...]
         // Or object format: { timestamp, open, high, low, close, volume }
@@ -233,28 +232,7 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
 
   return (
     <div className="flex h-full flex-col gap-6  bg-white dark:bg-zinc-900">
-      <nav className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-300 bg-slate-100 px-6 py-4 dark:border-slate-800 dark:bg-slate-950/50">
-        <div>
-          <p className="text-[11px] tracking-[0.4em] text-emerald-600 uppercase dark:text-emerald-400">{t('trading.dreamTrade')}</p>
-          <h1 className="text-xl font-semibold text-slate-900 dark:text-white">{t('trading.intelligence')}</h1>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
-          <button type="button" className="rounded-full border border-slate-400 px-4 py-1.5 text-slate-900 dark:border-slate-700 dark:text-white">
-            {t('nav.workspace')}
-          </button>
-          <button type="button" className="rounded-full border border-transparent px-4 py-1.5 hover:text-slate-900 dark:hover:text-white">
-            {t('nav.insights')}
-          </button>
-          <button type="button" className="rounded-full border border-transparent px-4 py-1.5 hover:text-slate-900 dark:hover:text-white">
-            {t('nav.news')}
-          </button>
-          <button type="button" className="rounded-full border border-transparent px-4 py-1.5 hover:text-slate-900 dark:hover:text-white">
-            {t('nav.settings')}
-          </button>
-          <AccountDropdown />
-        </div>
-      </nav>
+      <DashboardNav />
 
       <div className="grid grow gap-6 overflow-hidden lg:grid-cols-[3fr_1fr]">
         <section className="flex h-full flex-col rounded-[32px] border border-slate-300 bg-slate-50 p-6 dark:border-slate-900/80 dark:bg-slate-950/70">
@@ -349,7 +327,8 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
                     </div>
                   </button>
                 );
-              })}</div>
+              })}
+            </div>
           </section>
 
           <section className="flex-shrink-0 space-y-4 rounded-2xl border border-slate-300 bg-slate-100 p-4 dark:border-slate-800 dark:bg-slate-950/80">

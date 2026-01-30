@@ -11,6 +11,24 @@ const baseConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
   reactCompiler: true,
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+      // Allow news article images from various sources
+      {
+        protocol: 'https',
+        hostname: 'blogtienao.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '**', // Allow all HTTPS images (for news articles from various sources)
+      },
+    ],
+    formats: ['image/avif', 'image/webp'],
+  },
   experimental: {
     turbopackFileSystemCacheForDev: true,
   },

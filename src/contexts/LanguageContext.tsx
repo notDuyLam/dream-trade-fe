@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, use, useEffect, useState } from 'react';
+import { createContext, use, useCallback, useEffect, useMemo, useState } from 'react';
 import { getTranslation } from '@/locales';
 
 export type Language = 'en' | 'vi' | 'ja' | 'ko';
@@ -14,34 +14,41 @@ type LanguageContextType = {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  const [language, setLanguageState] = useState<Language>(() => {
-    // Initialize with default value to avoid hydration mismatch
-    return 'en';
-  });
+  const [language, setLanguageState] = useState<Language>('en');
 
   useEffect(() => {
-    // Load language from localStorage only on client
+    let timer: NodeJS.Timeout | undefined;
     const savedLang = localStorage.getItem('language') as Language | null;
     if (savedLang) {
-      setLanguageState(savedLang);
+      timer = setTimeout(() => {
+        setLanguageState(prev => prev !== savedLang ? savedLang : prev);
+      }, 0);
     }
-    setMounted(true);
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
   }, []);
 
-  const setLanguage = (lang: Language) => {
+  const setLanguage = useCallback((lang: Language) => {
     setLanguageState(lang);
     if (typeof window !== 'undefined') {
       localStorage.setItem('language', lang);
     }
-  };
+  }, []);
 
-  // Translation function with actual translations
-  const t = (key: string): string => {
+  const t = useCallback((key: string): string => {
     return getTranslation(language, key);
-  };
+  }, [language]);
 
-  return <LanguageContext value={{ language, setLanguage, t }}>{children}</LanguageContext>;
+  const value = useMemo(() => ({
+    language,
+    setLanguage,
+    t,
+  }), [language, setLanguage, t]);
+
+  return <LanguageContext value={value}>{children}</LanguageContext>;
 }
 
 export function useLanguage() {
