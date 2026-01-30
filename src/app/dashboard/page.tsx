@@ -87,8 +87,8 @@ export default async function DashboardPage(props: DashboardPageProps) {
     .sort((a: CandleDataPoint, b: CandleDataPoint) => a.time - b.time);
 
   return (
-    <main className="flex h-full flex-1 flex-col overflow-hidden bg-white px-4 py-4 md:px-8 md:py-6 dark:bg-slate-950">
+    <div className="h-full w-full overflow-hidden bg-white dark:bg-slate-950">
       <TradingWorkspace defaultSymbol={symbol} defaultTimeframe={DEFAULT_TIMEFRAME} initialCandles={initialCandles} />
-    </main>
+    </div>
   );
 }

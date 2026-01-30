@@ -55,12 +55,12 @@ export default async function NewsPage() {
   }
 
   return (
-    <main className="flex h-full flex-1 flex-col overflow-auto bg-white px-4 py-6 md:px-8 dark:bg-slate-950">
+    <div className="h-full w-full overflow-auto bg-white px-4 py-4 md:px-6 dark:bg-slate-950">
       <NewsSection
         initialArticles={initialArticles}
         initialTotal={initialTotal}
         initialPage={1}
       />
-    </main>
+    </div>
   );
 }

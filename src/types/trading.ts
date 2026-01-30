@@ -31,6 +31,7 @@ export type RealtimePrice = {
   change24h: number;
   high24h: number;
   low24h: number;
+  vol24h: number;
   updatedAt: number;
 };
 
