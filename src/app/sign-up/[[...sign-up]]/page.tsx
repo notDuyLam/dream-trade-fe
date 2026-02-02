@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRegister } from '@/hooks/useAuth';
 
@@ -105,9 +106,9 @@ export default function SignUpPage() {
         <p className="text-center text-xs text-slate-600 dark:text-slate-400">
           Already have an account?
           {' '}
-          <a href="/sign-in" className="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300">
+          <Link href="/sign-in" className="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300">
             Sign in
-          </a>
+          </Link>
         </p>
       </div>
     </div>

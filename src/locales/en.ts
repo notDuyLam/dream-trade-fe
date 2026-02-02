@@ -64,6 +64,24 @@ export const en = {
   'common.loading': 'Loading...',
   'common.error': 'Error',
   'common.success': 'Success',
+
+  // News Section
+  'news.title': 'Market News',
+  'news.subtitle': 'Latest news and analysis updates',
+  'news.search': 'Search news...',
+  'news.noResults': 'No news found',
+  'news.loadMore': 'Load More',
+  'news.loading': 'Loading news...',
+  'news.readMore': 'Read More',
+  'news.minRead': 'min read',
+  'news.source': 'Source',
+  'news.category': 'Category',
+  'news.allCategories': 'All',
+  'news.sortBy': 'Sort by',
+  'news.newest': 'Newest',
+  'news.oldest': 'Oldest',
+  'news.publishedAt': 'Published at',
+  'news.author': 'Author',
 };
 
 export type TranslationKeys = keyof typeof en;

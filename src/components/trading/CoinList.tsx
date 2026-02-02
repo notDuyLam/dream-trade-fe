@@ -3,10 +3,9 @@
 import type { TradingSymbol } from '@/types/trading';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { binancePriceStream } from '@/services/binance/binanceWebSocket';
 import { COIN_VOLUMES } from '@/services/coins/coinConfig';
 import { CoinService } from '@/services/coins/coinService';
-import { livePriceStream } from '@/services/websocket/livePriceStream';
-import { priceStream } from '@/services/websocket/priceStream';
 import { formatPrice } from '@/utils/pricePrecision';
 
 type CoinInfo = {
@@ -44,16 +43,17 @@ export const CoinList = () => {
     })();
   }, []);
 
+  // Subscribe to Binance WebSocket for real-time price updates
   useEffect(() => {
     if (allSymbols.length === 0) {
       return;
     }
 
-    const useLive = Boolean(process.env.NEXT_PUBLIC_WS_URL);
-    const source = useLive ? livePriceStream : priceStream;
+    console.warn('🔌 Subscribing to Binance WebSocket for', allSymbols.length, 'symbols');
 
+    // Subscribe to all symbols via Binance WebSocket
     const unsubscribers = allSymbols.map(symbol =>
-      source.subscribe(symbol, (payload) => {
+      binancePriceStream.subscribe(symbol, (payload) => {
         setCoins(prev =>
           prev.map(coin =>
             coin.symbol === symbol
@@ -71,6 +71,7 @@ export const CoinList = () => {
     );
 
     return () => {
+      console.warn('🔌 Unsubscribing from Binance WebSocket');
       unsubscribers.forEach(unsub => unsub());
     };
   }, [allSymbols]);

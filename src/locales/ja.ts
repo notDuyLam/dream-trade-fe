@@ -64,4 +64,22 @@ export const ja = {
   'common.loading': '読み込み中...',
   'common.error': 'エラー',
   'common.success': '成功',
+
+  // News Section
+  'news.title': '市場ニュース',
+  'news.subtitle': '最新のニュースと分析',
+  'news.search': 'ニュースを検索...',
+  'news.noResults': 'ニュースが見つかりません',
+  'news.loadMore': 'もっと読む',
+  'news.loading': 'ニュースを読み込んでいます...',
+  'news.readMore': '読む',
+  'news.minRead': '分読む',
+  'news.source': 'ソース',
+  'news.category': 'カテゴリー',
+  'news.allCategories': 'すべて',
+  'news.sortBy': '並べ替え',
+  'news.newest': '最新',
+  'news.oldest': '古い',
+  'news.publishedAt': '公開日',
+  'news.author': '著者',
 };

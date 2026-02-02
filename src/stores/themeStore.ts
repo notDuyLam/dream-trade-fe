@@ -36,7 +36,6 @@ const applyThemeToDOM = (theme: Theme) => {
   // Không cần class 'light'
   root.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
-  console.log('Theme applied:', theme, 'Classes:', root.className);
 };
 
 export const useThemeStore = create<ThemeState>((set, get) => ({

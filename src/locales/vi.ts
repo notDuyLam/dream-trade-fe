@@ -64,4 +64,22 @@ export const vi = {
   'common.loading': 'Đang tải...',
   'common.error': 'Lỗi',
   'common.success': 'Thành công',
+
+  // News Section
+  'news.title': 'Tin tức thị trường',
+  'news.subtitle': 'Cập nhật tin tức và phân tích mới nhất',
+  'news.search': 'Tìm kiếm tin tức...',
+  'news.noResults': 'Không tìm thấy tin tức',
+  'news.loadMore': 'Xem thêm',
+  'news.loading': 'Đang tải tin tức...',
+  'news.readMore': 'Đọc thêm',
+  'news.minRead': 'phút đọc',
+  'news.source': 'Nguồn',
+  'news.category': 'Danh mục',
+  'news.allCategories': 'Tất cả',
+  'news.sortBy': 'Sắp xếp theo',
+  'news.newest': 'Mới nhất',
+  'news.oldest': 'Cũ nhất',
+  'news.publishedAt': 'Đăng lúc',
+  'news.author': 'Tác giả',
 };
