@@ -129,7 +129,7 @@ export const newsService = {
         params.append('sort', filters.sortBy);
       }
 
-      const url = `${API_BASE_URL}/api/v1/articles?${params.toString()}`;
+      const url = `${API_BASE_URL}/api/v1/articles/?${params.toString()}`;
 
       const response = await fetch(url, {
         cache: 'no-store', // Always fetch fresh news

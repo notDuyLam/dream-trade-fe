@@ -3,6 +3,7 @@
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { getAuthBaseUrl } from '@/services/api/client';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
@@ -11,7 +12,10 @@ type GoogleLoginButtonProps = {
   onError?: (error: string) => void;
 };
 
-export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps) {
+export function GoogleLoginButton({
+  onSuccess,
+  onError,
+}: GoogleLoginButtonProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -23,7 +27,7 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
     setIsLoading(true);
 
     // Send ID token to backend
-    fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/google`, {
+    fetch(`${getAuthBaseUrl()}/auth/google`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -59,7 +63,9 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
       .catch((error) => {
         console.error('Google login error:', error);
         if (onError) {
-          onError(error instanceof Error ? error.message : 'Google login failed');
+          onError(
+            error instanceof Error ? error.message : 'Google login failed',
+          );
         }
       })
       .finally(() => {
@@ -87,7 +93,13 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
             <div className="text-sm text-white">Loading...</div>
           </div>
         )}
-        <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} useOneTap text="continue_with" width="100%" />
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          useOneTap
+          text="continue_with"
+          width="100%"
+        />
       </div>
     </GoogleOAuthProvider>
   );

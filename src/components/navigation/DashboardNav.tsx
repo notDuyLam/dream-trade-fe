@@ -6,9 +6,15 @@ import { usePathname } from 'next/navigation';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const AccountDropdown = dynamic(() => import('@/components/auth/AccountDropdown').then(mod => ({ default: mod.AccountDropdown })), {
-  ssr: false,
-});
+const AccountDropdown = dynamic(
+  () =>
+    import('@/components/auth/AccountDropdown').then(mod => ({
+      default: mod.AccountDropdown,
+    })),
+  {
+    ssr: false,
+  },
+);
 
 type NavItem = {
   href: string;
@@ -19,6 +25,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard', labelKey: 'nav.workspace' },
   { href: '/dashboard/insights', labelKey: 'nav.insights' },
   { href: '/dashboard/news', labelKey: 'nav.news' },
+  { href: '/dashboard/subscription', labelKey: 'nav.subscription' },
   { href: '/dashboard/settings', labelKey: 'nav.settings' },
 ];
 
@@ -38,8 +45,18 @@ export const DashboardNav = () => {
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-lg bg-emerald-500 shadow-lg shadow-emerald-500/20">
-            <svg className="size-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            <svg
+              className="size-5 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+              />
             </svg>
           </div>
           <p className="hidden text-[10px] font-bold tracking-[0.2em] text-emerald-600 uppercase sm:block dark:text-emerald-400">
@@ -71,7 +88,10 @@ export const DashboardNav = () => {
 
       <div className="flex items-center gap-4">
         {/* Mock Avatar for UI demonstration */}
-        <button type="button" className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-[10px] font-bold text-white shadow-lg transition-transform hover:scale-110">
+        <button
+          type="button"
+          className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-[10px] font-bold text-white shadow-lg transition-transform hover:scale-110"
+        >
           JD
         </button>
         <AccountDropdown />
