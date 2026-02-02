@@ -58,10 +58,15 @@ export const authService = {
    * Logout user (cookies cleared by backend)
    */
   async logout(): Promise<void> {
-    await apiRequest<void>({
-      path: '/auth/logout',
-      method: 'POST',
-    });
+    try {
+      await apiRequest<void>({
+        path: '/auth/logout',
+        method: 'POST',
+      });
+    } catch (error) {
+      // Ignore 401 errors during logout - user is already logged out
+      console.warn('Logout request failed (already logged out?):', error);
+    }
   },
 
   /**

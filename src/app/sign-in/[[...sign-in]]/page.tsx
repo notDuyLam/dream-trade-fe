@@ -72,27 +72,32 @@ export default function SignInPage() {
           </button>
         </form>
 
-        {/* Divider */}
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-300 dark:border-slate-700"></div>
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-slate-50 px-2 text-slate-600 dark:bg-slate-900/70 dark:text-slate-400">Or continue with</span>
-          </div>
-        </div>
+        {/* Google Login - Only show if configured */}
+        {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+          <>
+            {/* Divider */}
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-300 dark:border-slate-700"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-slate-50 px-2 text-slate-600 dark:bg-slate-900/70 dark:text-slate-400">Or continue with</span>
+              </div>
+            </div>
 
-        {/* Google Login */}
-        <div className="space-y-2">
-          <GoogleLoginButton
-            onSuccess={() => {
-              // Google login successful
-            }}
-            onError={(error) => {
-              console.error('Google login failed:', error);
-            }}
-          />
-        </div>
+            {/* Google Login */}
+            <div className="space-y-2">
+              <GoogleLoginButton
+                onSuccess={() => {
+                  // Google login successful
+                }}
+                onError={() => {
+                  // Google login failed - silently ignore
+                }}
+              />
+            </div>
+          </>
+        )}
 
         <p className="text-center text-xs text-slate-600 dark:text-slate-400">
           Don't have an account?
