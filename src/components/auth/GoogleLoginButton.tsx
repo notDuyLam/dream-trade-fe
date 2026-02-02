@@ -1,9 +1,7 @@
 'use client';
 
 import { GoogleLogin, GoogleOAuthProvider } from '@react-oauth/google';
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { getAuthBaseUrl } from '@/services/api/client';
+import { useGoogleLogin } from '@/hooks/useAuth';
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
 
@@ -16,68 +14,28 @@ export function GoogleLoginButton({
   onSuccess,
   onError,
 }: GoogleLoginButtonProps) {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const { mutate: googleLogin, isPending } = useGoogleLogin();
 
   const handleGoogleSuccess = (credentialResponse: any) => {
-    if (isLoading) {
+    if (isPending) {
       return;
-    } // Prevent multiple clicks
+    }
 
-    setIsLoading(true);
-
-    // Send ID token to backend
-    fetch(`${getAuthBaseUrl()}/auth/google`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    googleLogin(credentialResponse.credential, {
+      onSuccess: (response) => {
+        onSuccess?.(response.user);
       },
-      credentials: 'include', // Important for cookies
-      body: JSON.stringify({
-        idToken: credentialResponse.credential,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Google login failed');
-        }
-        return response.json();
-      })
-      .then((data) => {
-        // Store tokens in localStorage (or use context/state management)
-        if (data.accessToken) {
-          localStorage.setItem('accessToken', data.accessToken);
-        }
-        if (data.refreshToken) {
-          localStorage.setItem('refreshToken', data.refreshToken);
-        }
-
-        // Call success callback if provided
-        if (onSuccess) {
-          onSuccess(data.user);
-        }
-
-        // Redirect to dashboard
-        router.push('/dashboard');
-      })
-      .catch((error) => {
-        console.error('Google login error:', error);
-        if (onError) {
-          onError(
-            error instanceof Error ? error.message : 'Google login failed',
-          );
-        }
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });
+      onError: (error) => {
+        onError?.(
+          error instanceof Error ? error.message : 'Google login failed',
+        );
+      },
+    });
   };
 
   const handleGoogleError = () => {
     console.error('Google login error');
-    if (onError) {
-      onError('Google login failed');
-    }
+    onError?.('Google login failed');
   };
 
   if (!GOOGLE_CLIENT_ID) {
@@ -88,7 +46,7 @@ export function GoogleLoginButton({
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div className="relative w-full">
-        {isLoading && (
+        {isPending && (
           <div className="absolute inset-0 z-10 flex items-center justify-center rounded-md bg-slate-900/50">
             <div className="text-sm text-white">Loading...</div>
           </div>
