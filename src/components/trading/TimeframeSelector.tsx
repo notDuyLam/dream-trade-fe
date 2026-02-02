@@ -21,10 +21,10 @@ export const TimeframeSelector = (props: TimeframeSelectorProps) => {
           type="button"
           onClick={() => props.onChange(timeframe)}
           className={[
-            'rounded-md border px-3 py-1 text-xs font-semibold uppercase tracking-wide transition',
+            'rounded-lg px-3 py-1 text-[10px] font-bold tracking-widest uppercase transition-all duration-300',
             timeframe === props.value
-              ? 'border-emerald-400 bg-emerald-500/10 text-slate-900 dark:text-white'
-              : 'border-slate-400 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:border-slate-500',
+              ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+              : 'bg-slate-200/50 text-slate-600 hover:bg-slate-300/50 dark:bg-slate-800/50 dark:text-slate-400 dark:hover:bg-slate-700/50',
           ].join(' ')}
         >
           {timeframe}

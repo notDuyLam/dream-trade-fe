@@ -13,7 +13,7 @@ type AccountBalance = {
 
 export function AccountInfo() {
   const { user, isAuthenticated } = useAuthStore();
-  const [balance, setBalance] = useState<AccountBalance>({
+  const [balance, _setBalance] = useState<AccountBalance>({
     totalBalance: 10000.0,
     availableBalance: 8500.0,
     lockedBalance: 1500.0,
@@ -135,10 +135,10 @@ export function AccountInfo() {
 
       {/* Quick Actions */}
       <div className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-300 pt-6 dark:border-slate-800">
-        <button className="rounded-md bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-600 transition-colors hover:bg-emerald-500/20 dark:text-emerald-500">
+        <button type="button" className="rounded-md bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-600 transition-colors hover:bg-emerald-500/20 dark:text-emerald-500">
           Deposit
         </button>
-        <button className="rounded-md bg-slate-300 px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-400 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">
+        <button type="button" className="rounded-md bg-slate-300 px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-400 dark:bg-slate-800 dark:text-white dark:hover:bg-slate-700">
           Withdraw
         </button>
       </div>

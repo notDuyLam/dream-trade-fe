@@ -52,6 +52,7 @@ class LivePriceStream {
         change24h: roundPrice(payload.change24h ?? 0, 2),
         high24h: roundPrice(payload.high24h ?? payload.price, precision),
         low24h: roundPrice(payload.low24h ?? payload.price, precision),
+        vol24h: payload.vol24h ?? 0,
         updatedAt: payload.updatedAt ?? Date.now(),
       };
 

@@ -11,10 +11,7 @@ export function ThemeDebugger() {
   const { theme, mounted } = useThemeStore();
 
   useEffect(() => {
-    // Log theme changes
-    console.log('🎨 Theme changed:', theme);
-    console.log('📍 HTML classes:', document.documentElement.className);
-    console.log('✅ Mounted:', mounted);
+    // Theme changes are tracked internally
   }, [theme, mounted]);
 
   if (process.env.NODE_ENV !== 'development') {

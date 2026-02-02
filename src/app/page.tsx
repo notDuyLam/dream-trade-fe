@@ -31,7 +31,7 @@ export default function HomePage() {
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-16 text-center">
         <div className="space-y-8">
           <div className="space-y-4">
-            <p className="animate-fade-in text-sm tracking-[0.4em] text-emerald-400 uppercase">{AppConfig.name}</p>
+            <p className="animate-[fadeIn_0.6s_ease-in_forwards] text-sm tracking-[0.4em] text-emerald-400 uppercase opacity-0">{AppConfig.name}</p>
             <h1 className="text-4xl leading-tight font-bold text-white drop-shadow-2xl md:text-5xl lg:text-6xl">{AppConfig.tagline}</h1>
             <p className="mx-auto max-w-2xl text-lg text-slate-200 drop-shadow-lg md:text-xl">{AppConfig.description}</p>
           </div>

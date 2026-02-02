@@ -20,10 +20,6 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
       return;
     } // Prevent multiple clicks
 
-    console.log('🔐 Google Credential Response:', credentialResponse);
-    console.log('📝 ID Token:', credentialResponse.credential);
-    console.log('🌐 API URL:', process.env.NEXT_PUBLIC_API_URL);
-
     setIsLoading(true);
 
     // Send ID token to backend
@@ -38,18 +34,12 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
       }),
     })
       .then((response) => {
-        console.log('📡 Backend Response Status:', response.status);
         if (!response.ok) {
           throw new Error('Google login failed');
         }
         return response.json();
       })
       .then((data) => {
-        console.log('✅ Backend Response Data:', data);
-        console.log('👤 User Info:', data.user);
-        console.log('🔑 Access Token:', data.accessToken ? 'Received' : 'Missing');
-        console.log('🔄 Refresh Token:', data.refreshToken ? 'Received' : 'Missing');
-
         // Store tokens in localStorage (or use context/state management)
         if (data.accessToken) {
           localStorage.setItem('accessToken', data.accessToken);

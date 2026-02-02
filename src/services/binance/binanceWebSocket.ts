@@ -63,7 +63,7 @@ class BinancePriceStream {
     const ws = new WebSocket(`${BINANCE_WS_BASE}/${streamName}`);
 
     ws.onopen = () => {
-      console.log(`[BinanceWS] Connected to ${symbol}`);
+      console.warn(`[BinanceWS] Connected to ${symbol}`);
     };
 
     ws.onmessage = (event) => {
@@ -76,6 +76,7 @@ class BinancePriceStream {
           change24h: Number.parseFloat(data.P),
           high24h: Number.parseFloat(data.h),
           low24h: Number.parseFloat(data.l),
+          vol24h: Number.parseFloat(data.v),
           updatedAt: data.E,
         };
 
@@ -94,7 +95,7 @@ class BinancePriceStream {
     };
 
     ws.onclose = () => {
-      console.log(`[BinanceWS] Disconnected from ${symbol}`);
+      console.warn(`[BinanceWS] Disconnected from ${symbol}`);
       this.sockets.delete(symbol);
     };
 

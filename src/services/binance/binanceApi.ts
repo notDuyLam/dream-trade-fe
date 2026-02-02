@@ -10,6 +10,7 @@ const timeframeToInterval: Record<Timeframe, string> = {
   '1h': '1h',
   '4h': '4h',
   '1d': '1d',
+  '1s': '1s',
 };
 
 type BinanceKline = {

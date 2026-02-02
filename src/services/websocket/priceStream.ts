@@ -106,6 +106,7 @@ class MockPriceStream {
       change24h: Number(change24h.toFixed(2)),
       high24h: roundPrice(high24h, precision),
       low24h: roundPrice(low24h, precision),
+      vol24h: base * (Math.random() * 100 + 50),
       updatedAt: Date.now(),
     };
 

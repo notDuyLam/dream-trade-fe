@@ -4,7 +4,7 @@ import type { Language } from '@/contexts/LanguageContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 export function LanguageSelector() {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, setLanguage } = useLanguage();
 
   const languages: { code: Language; label: string; flag: string }[] = [
     { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -12,8 +12,6 @@ export function LanguageSelector() {
     { code: 'ja', label: '日本語', flag: '🇯🇵' },
     { code: 'ko', label: '한국어', flag: '🇰🇷' },
   ];
-
-  const currentLang = languages.find(lang => lang.code === language) || languages[0];
 
   return (
     <div className="relative inline-block">

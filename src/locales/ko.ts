@@ -64,4 +64,22 @@ export const ko = {
   'common.loading': '로딩 중...',
   'common.error': '오류',
   'common.success': '성공',
+
+  // News Section
+  'news.title': '시장 뉴스',
+  'news.subtitle': '최신 뉴스 및 분석',
+  'news.search': '뉴스 검색...',
+  'news.noResults': '뉴스를 찾을 수 없습니다',
+  'news.loadMore': '더 보기',
+  'news.loading': '뉴스를 불러오는 중...',
+  'news.readMore': '더 읽기',
+  'news.minRead': '분 읽기',
+  'news.source': '출처',
+  'news.category': '카테고리',
+  'news.allCategories': '모든',
+  'news.sortBy': '정렬',
+  'news.newest': '최신',
+  'news.oldest': '오래된',
+  'news.publishedAt': '게시일',
+  'news.author': '저자',
 };
