@@ -20,7 +20,7 @@ export const Footer = () => {
             <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
               Look first / Then leap.
             </p>
-            
+
             {/* Social Icons */}
             <div className="flex flex-wrap gap-3">
               <a href="#" className="text-slate-400 transition-colors hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300">
@@ -48,7 +48,7 @@ export const Footer = () => {
 
           {/* Products */}
           <div>
-            <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+            <h3 className="mb-4 text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-slate-100">
               Sản phẩm
             </h3>
             <ul className="space-y-2 text-sm">
@@ -62,7 +62,7 @@ export const Footer = () => {
 
           {/* Features */}
           <div>
-            <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+            <h3 className="mb-4 text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-slate-100">
               Tính năng
             </h3>
             <ul className="space-y-2 text-sm">
@@ -75,7 +75,7 @@ export const Footer = () => {
 
           {/* Community */}
           <div>
-            <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+            <h3 className="mb-4 text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-slate-100">
               Cộng đồng
             </h3>
             <ul className="space-y-2 text-sm">
@@ -88,7 +88,7 @@ export const Footer = () => {
 
           {/* Business */}
           <div>
-            <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-slate-900 dark:text-slate-100">
+            <h3 className="mb-4 text-xs font-bold tracking-wider text-slate-900 uppercase dark:text-slate-100">
               Doanh nghiệp
             </h3>
             <ul className="space-y-2 text-sm">
@@ -103,7 +103,12 @@ export const Footer = () => {
         {/* Bottom Bar */}
         <div className="mt-12 border-t border-slate-200 pt-8 dark:border-slate-800">
           <div className="flex flex-col items-center justify-between gap-4 text-sm text-slate-500 md:flex-row dark:text-slate-400">
-            <p>© {new Date().getFullYear()} DreamTrade. All rights reserved.</p>
+            <p>
+              ©
+              {new Date().getFullYear()}
+              {' '}
+              DreamTrade. All rights reserved.
+            </p>
             <div className="flex gap-6">
               <Link href="#" className="hover:text-emerald-600 dark:hover:text-emerald-400">Điều khoản</Link>
               <Link href="#" className="hover:text-emerald-600 dark:hover:text-emerald-400">Quyền riêng tư</Link>
