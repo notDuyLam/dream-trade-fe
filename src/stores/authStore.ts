@@ -30,11 +30,27 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
         }),
 
-      clearAuth: () =>
+      clearAuth: () => {
+        // Clear all browser storage
+        if (typeof window !== 'undefined') {
+          // 1. Clear localStorage (legacy - tokens are now in httpOnly cookies)
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
+          localStorage.removeItem('auth-storage');
+
+          // 2. Clear sessionStorage
+          sessionStorage.clear();
+
+          // Note: httpOnly cookies are cleared by backend /auth/logout endpoint
+          // JavaScript cannot access or delete httpOnly cookies
+        }
+
+        // 3. Clear Zustand state
         set({
           user: null,
           isAuthenticated: false,
-        }),
+        });
+      },
 
       updateUser: userData =>
         set(state => ({

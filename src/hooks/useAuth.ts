@@ -113,3 +113,22 @@ export function useAuth() {
     isAuthenticated,
   };
 }
+
+/**
+ * Hook để login bằng Google
+ */
+export function useGoogleLogin() {
+  const router = useRouter();
+  const setAuth = useAuthStore(state => state.setAuth);
+
+  return useMutation({
+    mutationFn: (idToken: string) => authService.loginWithGoogle(idToken),
+    onSuccess: (response) => {
+      setAuth(response.user);
+      router.push('/dashboard');
+    },
+    onError: (error: Error) => {
+      console.error('Google login failed:', error);
+    },
+  });
+}
