@@ -8,7 +8,6 @@ import { binanceService } from '@/services/binance/binanceApi';
 import { binancePriceStream } from '@/services/binance/binanceWebSocket';
 import { CoinService } from '@/services/coins/coinService';
 import { formatPrice, roundPrice } from '@/utils/pricePrecision';
-import { AccountInfo } from './AccountInfo';
 import { SymbolSelector } from './SymbolSelector';
 import { TimeframeSelector } from './TimeframeSelector';
 
@@ -206,9 +205,6 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
         </section>
 
         <aside className="flex h-full flex-col gap-4 rounded-[32px] border border-slate-300 bg-slate-100 p-4 dark:border-slate-900/80 dark:bg-slate-950/60">
-          {/* Account Info Section */}
-          <AccountInfo />
-
           <section className="flex h-0 flex-1 flex-col overflow-hidden">
             <div className="flex items-center justify-between">
               <div>

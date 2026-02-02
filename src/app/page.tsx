@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useAuthStore } from '@/stores/authStore';
 import { AppConfig } from '@/utils/AppConfig';
 
 const LanguageSelector = dynamic(() => import('@/components/common/LanguageSelector').then(mod => ({ default: mod.LanguageSelector })), {
@@ -12,6 +13,7 @@ const LanguageSelector = dynamic(() => import('@/components/common/LanguageSelec
 
 export default function HomePage() {
   const { t } = useLanguage();
+  const { isAuthenticated } = useAuthStore();
 
   return (
     <main className="relative flex min-h-screen w-full items-center justify-center overflow-hidden">
@@ -38,7 +40,7 @@ export default function HomePage() {
 
           <div className="flex flex-wrap justify-center gap-4 pt-8">
             <Link
-              href="/sign-in"
+              href={isAuthenticated ? '/dashboard' : '/sign-in'}
               className="rounded-full bg-emerald-500 px-8 py-4 text-lg font-semibold text-white shadow-2xl shadow-emerald-500/50 transition-all hover:scale-105 hover:bg-emerald-400"
             >
               {t('landing.getStarted')}

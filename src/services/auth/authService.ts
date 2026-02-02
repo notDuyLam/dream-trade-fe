@@ -74,4 +74,15 @@ export const authService = {
       body: { oldPassword, newPassword },
     });
   },
+
+  /**
+   * Login with Google
+   */
+  async loginWithGoogle(idToken: string): Promise<AuthResponse> {
+    return apiRequest<AuthResponse, { idToken: string }>({
+      path: '/auth/google',
+      method: 'POST',
+      body: { idToken },
+    });
+  },
 };
