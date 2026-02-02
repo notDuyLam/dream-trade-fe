@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { GoogleLoginButton } from '@/components/auth/GoogleLoginButton';
 import { useLogin } from '@/hooks/useAuth';
@@ -82,8 +83,8 @@ export default function SignInPage() {
         {/* Google Login */}
         <div className="space-y-2">
           <GoogleLoginButton
-            onSuccess={(user) => {
-              console.log('Google login successful:', user);
+            onSuccess={() => {
+              // Google login successful
             }}
             onError={(error) => {
               console.error('Google login failed:', error);
@@ -94,9 +95,9 @@ export default function SignInPage() {
         <p className="text-center text-xs text-slate-600 dark:text-slate-400">
           Don't have an account?
           {' '}
-          <a href="/sign-up" className="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300">
+          <Link href="/sign-up" className="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300">
             Sign up
-          </a>
+          </Link>
         </p>
       </div>
     </div>

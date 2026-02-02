@@ -125,6 +125,9 @@ export const newsService = {
       if (filters.coin) {
         params.append('coin', filters.coin);
       }
+      if (filters.sortBy) {
+        params.append('sort', filters.sortBy);
+      }
 
       const url = `${API_BASE_URL}/api/v1/articles?${params.toString()}`;
 

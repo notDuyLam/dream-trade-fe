@@ -28,6 +28,7 @@ export const NewsSection = ({
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [totalPages, setTotalPages] = useState(Math.ceil(initialTotal / 12));
   const [categories, setCategories] = useState<string[]>([]);
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
@@ -35,9 +36,10 @@ export const NewsSection = ({
   const [selectedCoin, setSelectedCoin] = useState('');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest'>('newest');
 
-  // Infinite scroll ref
+  // Refs
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreTriggerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -51,6 +53,36 @@ export const NewsSection = ({
     };
     void loadCategories();
   }, []);
+
+  // Track scroll position for scroll-to-top button
+  useEffect(() => {
+    const handleScroll = () => {
+      // Find the scrollable parent container
+      const scrollableParent = containerRef.current?.closest('.overflow-auto') as HTMLElement;
+      if (scrollableParent) {
+        setShowScrollTop(scrollableParent.scrollTop > 400);
+      }
+    };
+
+    // Find the scrollable parent and attach listener
+    const scrollableParent = containerRef.current?.closest('.overflow-auto') as HTMLElement;
+    if (scrollableParent) {
+      scrollableParent.addEventListener('scroll', handleScroll);
+      return () => scrollableParent.removeEventListener('scroll', handleScroll);
+    }
+    return undefined;
+  }, []);
+
+  // Scroll to top handler
+  const scrollToTop = () => {
+    const scrollableParent = containerRef.current?.closest('.overflow-auto') as HTMLElement;
+    if (scrollableParent) {
+      scrollableParent.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+    }
+  };
 
   // Load more articles
   const loadMoreArticles = useCallback(async () => {
@@ -68,6 +100,7 @@ export const NewsSection = ({
         q: searchQuery,
         category: selectedCategory,
         coin: selectedCoin,
+        sortBy,
       });
 
       setArticles(prev => [...prev, ...response.data]);
@@ -80,7 +113,7 @@ export const NewsSection = ({
     } finally {
       setIsLoading(false);
     }
-  }, [currentPage, totalPages, isLoading, hasError, searchQuery, selectedCategory, selectedCoin]);
+  }, [currentPage, totalPages, isLoading, hasError, searchQuery, selectedCategory, selectedCoin, sortBy]);
 
   // Handle filter changes with debounce for search
   useEffect(() => {
@@ -92,9 +125,10 @@ export const NewsSection = ({
           const response = await newsService.getArticles({
             page: 1,
             limit: 12,
-            q: searchQuery,
-            category: selectedCategory,
-            coin: selectedCoin,
+            q: searchQuery || undefined,
+            category: selectedCategory || undefined,
+            coin: selectedCoin || undefined,
+            sortBy,
           });
           setArticles(response.data);
           setCurrentPage(1);
@@ -107,24 +141,14 @@ export const NewsSection = ({
         }
       };
 
-      if (searchQuery || selectedCategory || selectedCoin) {
-        void fetchFilteredArticles();
-      } else {
-        setArticles(initialArticles);
-        setCurrentPage(initialPage);
-        setTotalPages(Math.ceil(initialTotal / 12));
-      }
-    }, searchQuery ? 500 : 0); // Debounce search, but not category/coin
+      // Always fetch when filters change (including reset to empty)
+      void fetchFilteredArticles();
+    }, searchQuery ? 500 : 0); // Debounce search, but not category/coin/sort
 
     return () => clearTimeout(timer);
-  }, [searchQuery, selectedCategory, selectedCoin, initialArticles, initialPage, initialTotal]);
+  }, [searchQuery, selectedCategory, selectedCoin, sortBy]);
 
-  // Sort articles client-side (since we only sort by date and API already does DESC)
-  const sortedArticles = [...articles].sort((a, b) => {
-    const dateA = new Date(a.published_date).getTime();
-    const dateB = new Date(b.published_date).getTime();
-    return sortBy === 'newest' ? dateB - dateA : dateA - dateB;
-  });
+  // Backend now handles sorting, so we use articles directly
 
   // Setup infinite scroll observer
   useEffect(() => {
@@ -153,13 +177,13 @@ export const NewsSection = ({
   }, [loadMoreArticles, isLoading, currentPage, totalPages, hasError]);
 
   return (
-    <div className="space-y-6">
+    <div ref={containerRef} className="relative space-y-8">
       {/* Header */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+      <div className="space-y-3">
+        <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white">
           {t('news.title')}
         </h1>
-        <p className="text-slate-600 dark:text-slate-400">
+        <p className="text-lg text-slate-600 dark:text-slate-400">
           {t('news.subtitle')}
         </p>
       </div>
@@ -177,10 +201,10 @@ export const NewsSection = ({
       />
 
       {/* Articles Grid */}
-      {sortedArticles.length > 0
+      {articles.length > 0
         ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {sortedArticles.map(article => (
+              {articles.map(article => (
                 <NewsCard key={article._id} article={article} />
               ))}
             </div>
@@ -269,6 +293,30 @@ export const NewsSection = ({
             </div>
           )}
         </div>
+      )}
+
+      {/* Scroll to Top Button */}
+      {showScrollTop && (
+        <button
+          type="button"
+          onClick={scrollToTop}
+          className="fixed right-8 bottom-8 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/30 transition-all duration-300 hover:scale-110 hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/40 focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:outline-none dark:bg-emerald-600 dark:hover:bg-emerald-500"
+          aria-label="Scroll to top"
+        >
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5 10l7-7m0 0l7 7m-7-7v18"
+            />
+          </svg>
+        </button>
       )}
     </div>
   );

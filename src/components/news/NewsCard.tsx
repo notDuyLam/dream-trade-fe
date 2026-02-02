@@ -42,7 +42,7 @@ export const NewsCard = ({ article }: NewsCardProps) => {
 
   return (
     <article
-      className="group relative overflow-hidden rounded-2xl border border-slate-300 bg-slate-100/80 shadow-lg shadow-black/5 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-emerald-500/10 dark:border-slate-800 dark:bg-slate-900/60 dark:shadow-black/20"
+      className="group relative overflow-hidden rounded-2xl border border-slate-300 bg-slate-100/80 shadow-lg shadow-black/5 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-emerald-400/50 hover:shadow-2xl hover:shadow-emerald-500/20 dark:border-slate-800 dark:bg-slate-900/60 dark:shadow-black/20 dark:hover:border-emerald-500/50"
     >
       <a
         href={article.url}
@@ -51,14 +51,14 @@ export const NewsCard = ({ article }: NewsCardProps) => {
         className="block"
       >
         {/* Featured Image */}
-        <div className="relative h-48 w-full overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900">
+        <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900">
           {article.image_url
             ? (
                 <Image
                   src={article.image_url}
                   alt={article.title}
                   fill
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+                  className="object-cover transition-transform duration-700 group-hover:scale-110"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               )
@@ -81,12 +81,12 @@ export const NewsCard = ({ article }: NewsCardProps) => {
               )}
 
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
           {/* Category Badge */}
           {article.category && (
             <div className="absolute top-3 left-3 max-w-[calc(100%-1.5rem)]">
-              <span className="inline-block truncate rounded-full bg-emerald-500 px-3 py-1 text-xs font-semibold tracking-wide text-white uppercase shadow-lg">
+              <span className="inline-block truncate rounded-full bg-emerald-500 px-3 py-1.5 text-xs font-bold tracking-wider text-white uppercase shadow-lg shadow-emerald-500/50">
                 {normalizeCategory(article.category) || article.category}
               </span>
             </div>
@@ -94,14 +94,14 @@ export const NewsCard = ({ article }: NewsCardProps) => {
         </div>
 
         {/* Content */}
-        <div className="p-5">
+        <div className="p-6">
           {/* Title */}
-          <h3 className="mb-2 line-clamp-2 text-lg font-semibold text-slate-900 transition-colors group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400">
+          <h3 className="mb-3 line-clamp-2 text-xl font-bold text-slate-900 transition-colors group-hover:text-emerald-600 dark:text-white dark:group-hover:text-emerald-400">
             {article.title}
           </h3>
 
           {/* Description */}
-          <p className="mb-4 line-clamp-3 text-sm text-slate-600 dark:text-slate-400">
+          <p className="mb-4 line-clamp-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
             {article.excerpt}
           </p>
 
@@ -111,7 +111,7 @@ export const NewsCard = ({ article }: NewsCardProps) => {
               {article.tags.slice(0, 3).map(tag => (
                 <span
                   key={`${article._id}-${tag}`}
-                  className="inline-block rounded-md bg-slate-200 px-2 py-1 text-xs text-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                  className="inline-block rounded-lg bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
                 >
                   #
                   {tag}
@@ -121,14 +121,14 @@ export const NewsCard = ({ article }: NewsCardProps) => {
           )}
 
           {/* Meta Info */}
-          <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-500">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold tracking-wide uppercase">
+          <div className="flex items-center justify-between border-t border-slate-200 pt-4 text-xs dark:border-slate-800">
+            <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+              <span className="font-bold tracking-wider uppercase">
                 {article.source}
               </span>
               {article.readingTime && (
                 <>
-                  <span>•</span>
+                  <span className="text-slate-400 dark:text-slate-600">•</span>
                   <span>
                     {article.readingTime}
                     {' '}
@@ -137,7 +137,7 @@ export const NewsCard = ({ article }: NewsCardProps) => {
                 </>
               )}
             </div>
-            <time dateTime={article.published_date} className="text-xs">
+            <time dateTime={article.published_date} className="text-xs font-medium text-slate-500 dark:text-slate-500">
               {timeAgo(article.published_date)}
             </time>
           </div>
@@ -153,8 +153,8 @@ export const NewsCard = ({ article }: NewsCardProps) => {
         </div>
 
         {/* Hover Glow Effect */}
-        <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/5 via-transparent to-emerald-500/5" />
+        <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-transparent to-blue-500/10" />
         </div>
       </a>
     </article>

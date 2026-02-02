@@ -27,9 +27,7 @@ export function AccountDropdown() {
   }, []);
 
   const handleThemeToggle = () => {
-    console.log('Toggle theme clicked! Current theme:', theme);
     toggleTheme();
-    console.log('Theme after toggle:', useThemeStore.getState().theme);
   };
 
   const handleLanguageChange = (lang: string) => {
