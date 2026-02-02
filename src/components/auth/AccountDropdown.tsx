@@ -62,7 +62,7 @@ export function AccountDropdown() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 z-50 mt-2 w-72 rounded-2xl border border-slate-300 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+        <div className="absolute right-0 z-9999 mt-2 w-72 rounded-2xl border border-slate-300 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
           {/* User Info - Clickable */}
           <button
             type="button"
