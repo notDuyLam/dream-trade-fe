@@ -17,6 +17,9 @@ export type User = {
   email: string;
   firstName: string;
   lastName: string;
+  accountType: 'regular' | 'vip';
+  isVerified?: boolean;
+  avatar?: string;
 };
 
 export type AuthResponse = {
