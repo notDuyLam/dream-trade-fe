@@ -10,7 +10,10 @@ type GoogleLoginButtonProps = {
   onError?: (error: string) => void;
 };
 
-export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps) {
+export function GoogleLoginButton({
+  onSuccess,
+  onError,
+}: GoogleLoginButtonProps) {
   const { mutate: googleLogin, isPending } = useGoogleLogin();
 
   const handleGoogleSuccess = (credentialResponse: any) => {
@@ -23,7 +26,9 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
         onSuccess?.(response.user);
       },
       onError: (error) => {
-        onError?.(error instanceof Error ? error.message : 'Google login failed');
+        onError?.(
+          error instanceof Error ? error.message : 'Google login failed',
+        );
       },
     });
   };
@@ -46,7 +51,13 @@ export function GoogleLoginButton({ onSuccess, onError }: GoogleLoginButtonProps
             <div className="text-sm text-white">Loading...</div>
           </div>
         )}
-        <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleError} useOneTap text="continue_with" width="100%" />
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          useOneTap
+          text="continue_with"
+          width="100%"
+        />
       </div>
     </GoogleOAuthProvider>
   );

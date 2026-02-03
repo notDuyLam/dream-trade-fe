@@ -6,9 +6,15 @@ import { usePathname } from 'next/navigation';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 
-const AccountDropdown = dynamic(() => import('@/components/auth/AccountDropdown').then(mod => ({ default: mod.AccountDropdown })), {
-  ssr: false,
-});
+const AccountDropdown = dynamic(
+  () =>
+    import('@/components/auth/AccountDropdown').then(mod => ({
+      default: mod.AccountDropdown,
+    })),
+  {
+    ssr: false,
+  }
+);
 
 type NavItem = {
   href: string;
@@ -19,6 +25,7 @@ const navItems: NavItem[] = [
   { href: '/dashboard', labelKey: 'nav.workspace' },
   { href: '/dashboard/insights', labelKey: 'nav.insights' },
   { href: '/dashboard/news', labelKey: 'nav.news' },
+  { href: '/dashboard/subscription', labelKey: 'nav.subscription' },
   { href: '/dashboard/settings', labelKey: 'nav.settings' },
 ];
 
@@ -42,13 +49,11 @@ export const DashboardNav = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
             </svg>
           </div>
-          <p className="hidden text-[10px] font-bold tracking-[0.2em] text-emerald-600 uppercase sm:block dark:text-emerald-400">
-            DreamTrade
-          </p>
+          <p className="hidden text-[10px] font-bold tracking-[0.2em] text-emerald-600 uppercase sm:block dark:text-emerald-400">DreamTrade</p>
         </Link>
 
         <div className="flex items-center gap-1">
-          {navItems.map((item) => {
+          {navItems.map(item => {
             const active = isActive(item.href);
             return (
               <Link key={item.href} href={item.href}>

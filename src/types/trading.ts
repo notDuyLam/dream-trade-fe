@@ -90,6 +90,18 @@ export type AiInsight = {
   reasoning: string[];
   catalystWindowMinutes: number;
   sentiment: SentimentLabel;
+  /** Display in UI: always the analyzed coin pair (e.g. ETHUSDT), from API res.coin – not fallback */
+  displaySymbol?: string;
+  /** Plain-language outlook for users (e.g. "Based on 175 articles, neutral. Range-bound in next 60 mins.") */
+  userSummary?: string;
+  /** Fear & Greed 0–100 from backend */
+  fearGreedScore?: number;
+  /** Bullish / bearish / neutral article counts */
+  sentimentDistribution?: { bullish: number; bearish: number; neutral: number };
+  /** Top articles driving this outlook (title + sentiment + short explanation) */
+  topArticles?: Array<{ title: string; sentiment?: string; explanation?: string }>;
+  /** Number of articles analyzed */
+  articlesCount?: number;
 };
 
 export type ChartTheme = 'dark' | 'light';

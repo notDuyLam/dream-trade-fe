@@ -3,6 +3,7 @@ export const ja = {
   'nav.workspace': 'ワークスペース',
   'nav.insights': 'インサイト',
   'nav.news': 'ニュース',
+  'nav.subscription': 'サブスクリプション',
   'nav.settings': '設定',
 
   // Account Dropdown
@@ -64,6 +65,8 @@ export const ja = {
   'common.loading': '読み込み中...',
   'common.error': 'エラー',
   'common.success': '成功',
+  'common.confirm': '確認',
+  'common.cancel': 'キャンセル',
 
   // News Section
   'news.title': '市場ニュース',
@@ -82,4 +85,28 @@ export const ja = {
   'news.oldest': '古い',
   'news.publishedAt': '公開日',
   'news.author': '著者',
+
+  // News – AI Analysis
+  'news.aiAnalysis': 'AI分析',
+  'news.analysisDescription': '選択したコインのセンチメントとトレンドを分析（VIP限定）。',
+  'news.analysisCoinHint': '上記フィルターで選択したコインで分析します。',
+  'news.chooseCoin': '上記フィルターでコインを選択するか、デフォルトのBTCを使用します。',
+  'news.runAnalysis': 'AI分析を実行',
+  'news.analysisLoading': '分析中...',
+  'news.vipOnly': 'AI分析はVIPユーザー限定です。サブスクリプションをアップグレードしてください。',
+  'news.analysisUnavailable': '分析は一時的に利用できません。後でもう一度お試しください。',
+  'news.retry': '再試行',
+  'news.upgradeCta': 'VIPにアップグレード',
+
+  'news.outlookShortTerm': '短期見通し',
+  'news.outlookUpside': '上昇バイアス',
+  'news.outlookDownside': '下落リスク',
+  'news.outlookRange': 'レンジ',
+  'news.outlookConfidence': '信頼度',
+  'news.marketMood': '市場心理',
+  'news.sentimentSplit': 'センチメント分布',
+  'news.keyDrivers': '主な要因（直近ニュース）',
+  'news.outlookWindow': '見通し期間',
+  'news.next60Mins': '60分後まで',
+  'news.articlesAnalyzed': '件の記事を分析',
 };

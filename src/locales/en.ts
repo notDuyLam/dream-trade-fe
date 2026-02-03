@@ -3,6 +3,7 @@ export const en = {
   'nav.workspace': 'Workspace',
   'nav.insights': 'Insights',
   'nav.news': 'News',
+  'nav.subscription': 'Subscription',
   'nav.settings': 'Settings',
 
   // Account Dropdown
@@ -64,6 +65,8 @@ export const en = {
   'common.loading': 'Loading...',
   'common.error': 'Error',
   'common.success': 'Success',
+  'common.confirm': 'Confirm',
+  'common.cancel': 'Cancel',
 
   // News Section
   'news.title': 'Market News',
@@ -82,6 +85,50 @@ export const en = {
   'news.oldest': 'Oldest',
   'news.publishedAt': 'Published at',
   'news.author': 'Author',
+
+  // News – AI Analysis
+  'news.aiAnalysis': 'AI Analysis',
+  'news.analysisDescription': 'Analyze sentiment and trends for the selected coin (VIP only).',
+  'news.analysisCoinHint': 'Analysis will use the coin selected in the filter above.',
+  'news.chooseCoin': 'Select a coin in the filter above to analyze, or use default BTC.',
+  'news.runAnalysis': 'Run AI Analysis',
+  'news.analysisLoading': 'Analyzing...',
+  'news.vipOnly': 'AI analysis is for VIP users only. Please upgrade your subscription.',
+  'news.analysisUnavailable': 'Analysis is temporarily unavailable. Please try again later.',
+  'news.retry': 'Retry',
+  'news.upgradeCta': 'Upgrade to VIP',
+
+  // News – AI Outlook (result card)
+  'news.outlookShortTerm': 'Short-term outlook',
+  'news.outlookUpside': 'Upside bias',
+  'news.outlookDownside': 'Downside risk',
+  'news.outlookRange': 'Range-bound',
+  'news.outlookConfidence': 'confidence',
+  'news.marketMood': 'Market mood',
+  'news.sentimentSplit': 'Sentiment split',
+  'news.keyDrivers': 'Key drivers (from recent news)',
+  'news.outlookWindow': 'Outlook window',
+  'news.next60Mins': 'next 60 mins',
+  'news.articlesAnalyzed': 'articles analyzed',
+
+  // Subscription
+  'subscription.title': 'Subscription',
+  'subscription.subtitle': 'Manage your plan and billing',
+  'subscription.currentPlan': 'Current plan',
+  'subscription.availablePlans': 'Available plans',
+  'subscription.upgrade': 'Upgrade to VIP',
+  'subscription.cancel': 'Cancel subscription',
+  'subscription.billingHistory': 'Billing history',
+  'subscription.signInRequired': 'Please sign in to view your subscription',
+  'subscription.upgradeSuccess': 'Upgraded to VIP successfully',
+  'subscription.cancelSuccess': 'Subscription cancelled',
+  'subscription.error': 'Something went wrong',
+  'subscription.status': 'Status',
+  'subscription.plan': 'Plan',
+  'subscription.startDate': 'Start date',
+  'subscription.endDate': 'End date',
+  'subscription.renewalDate': 'Renewal date',
+  'subscription.noBillingHistory': 'No billing history yet',
 };
 
 export type TranslationKeys = keyof typeof en;

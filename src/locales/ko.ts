@@ -3,6 +3,7 @@ export const ko = {
   'nav.workspace': '작업공간',
   'nav.insights': '인사이트',
   'nav.news': '뉴스',
+  'nav.subscription': '구독',
   'nav.settings': '설정',
 
   // Account Dropdown
@@ -64,6 +65,8 @@ export const ko = {
   'common.loading': '로딩 중...',
   'common.error': '오류',
   'common.success': '성공',
+  'common.confirm': '확인',
+  'common.cancel': '취소',
 
   // News Section
   'news.title': '시장 뉴스',
@@ -82,4 +85,28 @@ export const ko = {
   'news.oldest': '오래된',
   'news.publishedAt': '게시일',
   'news.author': '저자',
+
+  // News – AI Analysis
+  'news.aiAnalysis': 'AI 분석',
+  'news.analysisDescription': '선택한 코인에 대한 감성 및 추세 분석 (VIP 전용).',
+  'news.analysisCoinHint': '위 필터에서 선택한 코인으로 분석합니다.',
+  'news.chooseCoin': '위 필터에서 코인을 선택하거나 기본 BTC를 사용합니다.',
+  'news.runAnalysis': 'AI 분석 실행',
+  'news.analysisLoading': '분석 중...',
+  'news.vipOnly': 'AI 분석은 VIP 회원 전용입니다. 구독을 업그레이드해 주세요.',
+  'news.analysisUnavailable': '분석을 일시적으로 사용할 수 없습니다. 나중에 다시 시도해 주세요.',
+  'news.retry': '다시 시도',
+  'news.upgradeCta': 'VIP 업그레이드',
+
+  'news.outlookShortTerm': '단기 전망',
+  'news.outlookUpside': '상승 편향',
+  'news.outlookDownside': '하락 위험',
+  'news.outlookRange': '횡보',
+  'news.outlookConfidence': '신뢰도',
+  'news.marketMood': '시장 심리',
+  'news.sentimentSplit': '심리 분포',
+  'news.keyDrivers': '주요 동인 (최근 뉴스)',
+  'news.outlookWindow': '전망 구간',
+  'news.next60Mins': '60분 후까지',
+  'news.articlesAnalyzed': '개 기사 분석',
 };

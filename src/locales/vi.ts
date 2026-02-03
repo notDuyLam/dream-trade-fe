@@ -3,6 +3,7 @@ export const vi = {
   'nav.workspace': 'Không gian làm việc',
   'nav.insights': 'Phân tích',
   'nav.news': 'Tin tức',
+  'nav.subscription': 'Gói dịch vụ',
   'nav.settings': 'Cài đặt',
 
   // Account Dropdown
@@ -64,6 +65,8 @@ export const vi = {
   'common.loading': 'Đang tải...',
   'common.error': 'Lỗi',
   'common.success': 'Thành công',
+  'common.confirm': 'Xác nhận',
+  'common.cancel': 'Hủy',
 
   // News Section
   'news.title': 'Tin tức thị trường',
@@ -82,4 +85,48 @@ export const vi = {
   'news.oldest': 'Cũ nhất',
   'news.publishedAt': 'Đăng lúc',
   'news.author': 'Tác giả',
+
+  // News – AI Analysis
+  'news.aiAnalysis': 'Phân tích AI',
+  'news.analysisDescription': 'Phân tích sentiment và xu hướng theo coin đang chọn (chỉ VIP).',
+  'news.analysisCoinHint': 'Phân tích theo coin đang chọn ở bộ lọc phía trên.',
+  'news.chooseCoin': 'Chọn coin ở bộ lọc phía trên để phân tích, hoặc dùng mặc định BTC.',
+  'news.runAnalysis': 'Chạy phân tích AI',
+  'news.analysisLoading': 'Đang phân tích...',
+  'news.vipOnly': 'Tính năng phân tích AI chỉ dành cho tài khoản VIP. Vui lòng nâng cấp gói.',
+  'news.analysisUnavailable': 'Tạm thời không thể phân tích. Vui lòng thử lại sau.',
+  'news.retry': 'Thử lại',
+  'news.upgradeCta': 'Nâng cấp VIP',
+
+  // News – AI Outlook (kết quả)
+  'news.outlookShortTerm': 'Dự đoán ngắn hạn',
+  'news.outlookUpside': 'Xu hướng tăng',
+  'news.outlookDownside': 'Xu hướng giảm',
+  'news.outlookRange': 'Đi ngang',
+  'news.outlookConfidence': 'độ tin cậy',
+  'news.marketMood': 'Tâm lý thị trường',
+  'news.sentimentSplit': 'Phân bố sentiment',
+  'news.keyDrivers': 'Tin đáng chú ý (từ tin gần đây)',
+  'news.outlookWindow': 'Cửa sổ dự đoán',
+  'news.next60Mins': '60 phút tới',
+  'news.articlesAnalyzed': 'bài viết đã phân tích',
+
+  // Subscription
+  'subscription.title': 'Gói dịch vụ',
+  'subscription.subtitle': 'Quản lý gói và thanh toán',
+  'subscription.currentPlan': 'Gói hiện tại',
+  'subscription.availablePlans': 'Các gói có sẵn',
+  'subscription.upgrade': 'Nâng cấp VIP',
+  'subscription.cancel': 'Hủy gói',
+  'subscription.billingHistory': 'Lịch sử thanh toán',
+  'subscription.signInRequired': 'Vui lòng đăng nhập để xem gói dịch vụ',
+  'subscription.upgradeSuccess': 'Đã nâng cấp VIP thành công',
+  'subscription.cancelSuccess': 'Đã hủy gói',
+  'subscription.error': 'Đã xảy ra lỗi',
+  'subscription.status': 'Trạng thái',
+  'subscription.plan': 'Gói',
+  'subscription.startDate': 'Ngày bắt đầu',
+  'subscription.endDate': 'Ngày kết thúc',
+  'subscription.renewalDate': 'Ngày gia hạn',
+  'subscription.noBillingHistory': 'Chưa có lịch sử thanh toán',
 };
