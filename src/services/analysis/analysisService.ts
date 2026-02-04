@@ -1,6 +1,9 @@
 /**
- * AI Analysis Service - Direct to AI service on port 3003
- * Uses NEXT_PUBLIC_ANALYSIS_API_URL and credentials: 'include' for cookie auth.
+ * AI Analysis Service - via API Gateway on port 8080
+ * Flow: Client → Gateway (/analysis/analyze) → VipForAnalysisGuard (check JWT & VIP)
+ *       → Subscription Service → If VIP → Proxy to AI Service
+ *       → If NOT VIP → 403 Forbidden
+ * Uses credentials: 'include' for cookie auth with JWT.
  */
 
 import type { AiInsight, SentimentLabel, Timeframe, TradingSymbol } from '@/types/trading';
@@ -8,18 +11,93 @@ import { getAnalysisBaseUrl } from '@/services/api/client';
 
 /** Backend analyze response shape (AI service) */
 export type AnalysisApiResponse = {
-  coin: string;
-  articles_count: number;
-  timestamp: string;
-  summary: Record<string, unknown> | string;
+  symbol?: string;
+  coin?: string;
+  hours_back?: number;
+  articles_count?: number;
+  timestamp?: string;
+  summary?: Record<string, unknown> | string;
   /** Backend sends name + count (article counts per concept); legacy score is optional */
-  top_concepts: Array<{ name: string; count?: number; score?: number; [key: string]: unknown }>;
-  top_articles: Array<{
+  top_concepts?: Array<{ name: string; count?: number; score?: number; [key: string]: unknown }>;
+  top_articles?: Array<{
     title?: string;
     sentiment?: string;
     explanation?: string;
     [key: string]: unknown;
   }>;
+  // New causal analysis fields
+  granger_causality?: {
+    sentiment_to_price: {
+      is_causal: boolean;
+      p_value: number;
+      best_lag: number;
+    };
+    fear_greed_to_price: {
+      is_causal: boolean;
+      p_value: number;
+      best_lag: number;
+    };
+  };
+  correlations?: {
+    correlation_matrix: Record<string, Record<string, number>>;
+    p_values: Record<string, Record<string, number>>;
+    method: string;
+    significant_pairs: Array<{
+      var1: string;
+      var2: string;
+      correlation: number;
+      p_value: number;
+      strength: string;
+    }>;
+  };
+  lead_lag?: {
+    sentiment_lead: number;
+    max_correlation: number;
+  };
+  stationarity?: {
+    sentiment: {
+      series_name: string;
+      adf_statistic: number;
+      p_value: number;
+      critical_values: {
+        '1%': number;
+        '5%': number;
+        '10%': number;
+      };
+      is_stationary: boolean;
+      interpretation: string;
+    };
+    price: {
+      series_name: string;
+      adf_statistic: number;
+      p_value: number;
+      critical_values: {
+        '1%': number;
+        '5%': number;
+        '10%': number;
+      };
+      is_stationary: boolean;
+      interpretation: string;
+    };
+    fear_greed: {
+      series_name: string;
+      adf_statistic: number;
+      p_value: number;
+      critical_values: {
+        '1%': number;
+        '5%': number;
+        '10%': number;
+      };
+      is_stationary: boolean;
+      interpretation: string;
+    };
+  };
+  data_stats?: {
+    observations: number;
+    start_date: string;
+    end_date: string;
+    resample_frequency: string;
+  };
 };
 
 const COIN_TO_SYMBOL: Record<string, TradingSymbol> = {
@@ -54,6 +132,7 @@ function mapBackendSentiment(sentiment: string | undefined): SentimentLabel {
 /**
  * Map backend analyze response to AiInsight[] for AiInsightsPanel.
  * Backend provides: summary.overall_sentiment, summary.average_confidence, top_concepts[].count
+ * New: Also handles causal analysis response with correlations, granger causality, etc.
  */
 export function mapAnalyzeResponseToInsights(res: AnalysisApiResponse): AiInsight[] {
   const summaryObj
@@ -76,15 +155,15 @@ export function mapAnalyzeResponseToInsights(res: AnalysisApiResponse): AiInsigh
   const confidence
     = typeof (summaryObj as { average_confidence?: number }).average_confidence === 'number'
       ? Math.min(1, Math.max(0, (summaryObj as { average_confidence: number }).average_confidence))
-      : res.top_concepts?.length > 0
+      : res.top_concepts?.length ?? 0 > 0
         ? Math.min(
             1,
             Math.max(
               0,
-              res.top_concepts.reduce(
+              res.top_concepts!.reduce(
                 (a, c) => a + (typeof c.score === 'number' ? c.score : 0),
                 0,
-              ) / res.top_concepts.length,
+              ) / res.top_concepts!.length,
             ),
           )
         : 0.5;
@@ -111,8 +190,9 @@ export function mapAnalyzeResponseToInsights(res: AnalysisApiResponse): AiInsigh
     });
   }
 
-  const symbol = coinToTradingSymbol(res.coin);
-  const displaySymbol = `${String(res.coin).toUpperCase().replace(/USDT$/i, '')}USDT`;
+  const coinSymbol = res.symbol || res.coin || 'BTC';
+  const symbol = coinToTradingSymbol(coinSymbol);
+  const displaySymbol = `${String(coinSymbol).toUpperCase().replace(/USDT$/i, '')}USDT`;
   const timeframe: Timeframe = '1h';
   const dist
     = typeof (summaryObj as { sentiment_distribution?: { bullish?: number; bearish?: number; neutral?: number } })
@@ -128,7 +208,7 @@ export function mapAnalyzeResponseToInsights(res: AnalysisApiResponse): AiInsigh
   const directionLabel
     = direction === 'up' ? 'upside' : direction === 'down' ? 'downside' : 'range-bound';
   const userSummary
-    = res.articles_count > 0
+    = res.articles_count && res.articles_count > 0
       ? `Based on ${res.articles_count} articles, sentiment is ${sentiment}. Short-term outlook: ${directionLabel} (next 60 mins).`
       : summaryStr;
 
@@ -141,7 +221,7 @@ export function mapAnalyzeResponseToInsights(res: AnalysisApiResponse): AiInsigh
   );
 
   const insight: AiInsight = {
-    id: `ai-${res.coin}-${Date.now()}`,
+    id: `ai-${coinSymbol}-${Date.now()}`,
     symbol,
     displaySymbol,
     timeframe,
@@ -162,6 +242,19 @@ export function mapAnalyzeResponseToInsights(res: AnalysisApiResponse): AiInsigh
       : undefined,
     topArticles: topArticles.filter(a => a.title),
     articlesCount: res.articles_count,
+    hoursBack: res.hours_back,
+    grangerCausality: res.granger_causality,
+    correlations: res.correlations,
+    leadLag: res.lead_lag,
+    stationarity: res.stationarity,
+    dataStats: res.data_stats,
+    analysisSummary: (summaryObj as { causal_relationships?: string[]; key_findings?: string[]; actionable_insights?: string[] })
+      ? {
+          causal_relationships: (summaryObj as { causal_relationships?: string[] }).causal_relationships ?? [],
+          key_findings: (summaryObj as { key_findings?: string[] }).key_findings ?? [],
+          actionable_insights: (summaryObj as { actionable_insights?: string[] }).actionable_insights ?? [],
+        }
+      : undefined,
   };
 
   return [insight];
@@ -173,14 +266,16 @@ export type AnalyzeResult
 
 /**
  * Payload matches backend AnalysisRequest: { coin_symbol: str, hours_back: int (1–720, default 24) }
- * Call AI service POST /api/analyze on port 3003. Uses credentials: 'include' for cookie auth.
+ * Call Gateway POST /analysis/api/causal-analysis (port 8080).
+ * Gateway validates VIP status via VipForAnalysisGuard and proxies to AI service.
+ * Uses credentials: 'include' for JWT cookie auth.
  */
 export async function analyzeCoin(
   coinSymbol: string,
   hoursBack: number = 24,
 ): Promise<AnalyzeResult> {
   const baseUrl = getAnalysisBaseUrl();
-  const url = `${baseUrl}/api/analyze`;
+  const url = `${baseUrl}/analysis/api/causal-analysis`;
   const body = { coin_symbol: coinSymbol, hours_back: hoursBack };
 
   let response: Response;
@@ -195,7 +290,7 @@ export async function analyzeCoin(
   } catch (err) {
     const msg
       = err instanceof TypeError && (err.message === 'Failed to fetch' || err.message.includes('fetch'))
-        ? 'Cannot connect to AI Analysis service. Make sure it is running (e.g. port 3003).'
+        ? 'Cannot connect to API Gateway. Make sure it is running (port 8080).'
         : err instanceof Error
           ? err.message
           : 'Network error';

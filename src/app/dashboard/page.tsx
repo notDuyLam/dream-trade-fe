@@ -23,9 +23,13 @@ export default async function DashboardPage(props: DashboardPageProps) {
   const symbol = CoinService.isValidSymbol(DEFAULT_SYMBOL) ? DEFAULT_SYMBOL : (validSymbols[0] ?? 'BTCUSDT');
 
   // Fetch real data from Binance API via backend
-  const history = await marketService.getHistory(symbol, DEFAULT_TIMEFRAME, 1000);
+  let initialCandles: CandleDataPoint[] = [];
+  
+  try {
+    // Limit set to 500 to avoid Binance API errors (max is 1000 but can be unstable)
+    const history = await marketService.getHistory(symbol, DEFAULT_TIMEFRAME, 500);
 
-  const initialCandles = history.data
+    initialCandles = history.data
     .map((candle: any) => {
       // Binance returns array format: [timestamp, open, high, low, close, volume, ...]
       // Or object format: { timestamp, open, high, low, close, volume }
@@ -85,9 +89,14 @@ export default async function DashboardPage(props: DashboardPageProps) {
     )
     // Sort by time ascending (required by chart library)
     .sort((a: CandleDataPoint, b: CandleDataPoint) => a.time - b.time);
+  } catch (error) {
+    console.error('Failed to fetch market data, using empty chart:', error);
+    // Continue with empty data - chart will show "No data" message
+    initialCandles = [];
+  }
 
   return (
-    <div className="h-full w-full overflow-hidden bg-white dark:bg-slate-950">
+    <div className="min-h-full w-full bg-white dark:bg-slate-950">
       <TradingWorkspace defaultSymbol={symbol} defaultTimeframe={DEFAULT_TIMEFRAME} initialCandles={initialCandles} />
     </div>
   );

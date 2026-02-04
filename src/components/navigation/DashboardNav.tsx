@@ -87,13 +87,6 @@ export const DashboardNav = () => {
       </div>
 
       <div className="flex items-center gap-4">
-        {/* Mock Avatar for UI demonstration */}
-        <button
-          type="button"
-          className="flex size-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-[10px] font-bold text-white shadow-lg transition-transform hover:scale-110"
-        >
-          JD
-        </button>
         <AccountDropdown />
       </div>
     </nav>
