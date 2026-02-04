@@ -80,6 +80,59 @@ export type NewsFilters = {
   sortBy?: 'newest' | 'oldest';
 };
 
+// Causal Analysis Response Types
+export type GrangerCausalityResult = {
+  is_causal: boolean;
+  p_value: number;
+  best_lag: number;
+};
+
+export type SignificantCorrelationPair = {
+  var1: string;
+  var2: string;
+  correlation: number;
+  p_value: number;
+  strength: string;
+};
+
+export type CorrelationAnalysis = {
+  correlation_matrix: Record<string, Record<string, number>>;
+  p_values: Record<string, Record<string, number>>;
+  method: string;
+  significant_pairs: SignificantCorrelationPair[];
+};
+
+export type LeadLagAnalysis = {
+  sentiment_lead: number;
+  max_correlation: number;
+};
+
+export type StationarityTest = {
+  series_name: string;
+  adf_statistic: number;
+  p_value: number;
+  critical_values: {
+    '1%': number;
+    '5%': number;
+    '10%': number;
+  };
+  is_stationary: boolean;
+  interpretation: string;
+};
+
+export type DataStats = {
+  observations: number;
+  start_date: string;
+  end_date: string;
+  resample_frequency: string;
+};
+
+export type AnalysisSummary = {
+  causal_relationships: string[];
+  key_findings: string[];
+  actionable_insights: string[];
+};
+
 export type AiInsight = {
   id: string;
   symbol: TradingSymbol;
@@ -102,6 +155,27 @@ export type AiInsight = {
   topArticles?: Array<{ title: string; sentiment?: string; explanation?: string }>;
   /** Number of articles analyzed */
   articlesCount?: number;
+  /** Hours back for analysis */
+  hoursBack?: number;
+  /** Granger causality test results */
+  grangerCausality?: {
+    sentiment_to_price: GrangerCausalityResult;
+    fear_greed_to_price: GrangerCausalityResult;
+  };
+  /** Correlation analysis */
+  correlations?: CorrelationAnalysis;
+  /** Lead-lag analysis */
+  leadLag?: LeadLagAnalysis;
+  /** Stationarity tests */
+  stationarity?: {
+    sentiment: StationarityTest;
+    price: StationarityTest;
+    fear_greed: StationarityTest;
+  };
+  /** Data statistics */
+  dataStats?: DataStats;
+  /** Analysis summary with findings */
+  analysisSummary?: AnalysisSummary;
 };
 
 export type ChartTheme = 'dark' | 'light';

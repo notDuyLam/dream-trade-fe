@@ -1,9 +1,11 @@
 /**
- * Simple Market Service - Binance API Integration
- * Gọi các API từ backend market service
+ * Simple Market Service - Binance API Integration via Gateway
+ * All requests go through API Gateway (port 8080) which routes to market service
  */
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL_MARKET || 'http://localhost:3001';
+import { getApiBaseUrl } from '@/services/api/client';
+
+const API_BASE_URL = getApiBaseUrl();
 
 export const marketService = {
   /**

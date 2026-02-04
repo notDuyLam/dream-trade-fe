@@ -41,6 +41,27 @@ function fearGreedLabel(score: number): string {
   return 'Extreme fear';
 }
 
+function getCorrelationStrengthColor(correlation: number): string {
+  const abs = Math.abs(correlation);
+  if (abs >= 0.7) {
+    return 'text-emerald-400 font-semibold';
+  }
+  if (abs >= 0.4) {
+    return 'text-blue-400 font-medium';
+  }
+  if (abs >= 0.3) {
+    return 'text-amber-400';
+  }
+  return 'text-slate-400';
+}
+
+function formatPValue(pValue: number): string {
+  if (pValue < 0.001) {
+    return '< 0.001';
+  }
+  return pValue.toFixed(4);
+}
+
 export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
   const { t } = useLanguage();
 
@@ -51,34 +72,291 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
           key={insight.id}
           className="rounded-2xl border border-slate-300 bg-slate-100 p-5 text-sm text-slate-700 shadow-lg shadow-black/20 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-200"
         >
-          {/* Symbol + timeframe (displaySymbol = coin from API, e.g. ETHUSDT) */}
+          {/* Symbol + timeframe header */}
           <div className="flex items-center justify-between text-xs tracking-[0.3em] text-slate-500 uppercase">
-            <span>{insight.displaySymbol ?? insight.symbol}</span>
+            <span className="font-bold">{insight.displaySymbol ?? insight.symbol}</span>
             <span>{insight.timeframe}</span>
           </div>
 
-          {/* Short-term outlook (main prediction) */}
-          <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
-            <p
-              className={`text-lg font-semibold ${directionAccent[insight.direction]}`}
-            >
-              {t('news.outlookShortTerm')}
-              :
-              {' '}
-              {t(directionKeys[insight.direction])}
-            </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {(insight.confidence * 100).toFixed(0)}
-              %
-              {' '}
-              {t('news.outlookConfidence')}
-            </p>
-          </div>
+          {/* Analysis Summary Section */}
+          {insight.analysisSummary && (
+            <div className="mt-4 space-y-3">
+              {/* Actionable Insights - Highlighted */}
+              {insight.analysisSummary.actionable_insights.length > 0 && (
+                <div className="rounded-lg border-2 border-blue-500/40 bg-blue-500/10 p-3">
+                  <h4 className="mb-2 text-xs font-bold tracking-wider text-blue-400 uppercase">
+                    💡 Actionable Insights
+                  </h4>
+                  <ul className="space-y-1">
+                    {insight.analysisSummary.actionable_insights.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200"
+                      >
+                        <span className="mt-0.5 text-blue-400">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
-          {/* Plain-language summary for users */}
-          <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            {insight.userSummary ?? insight.summary}
-          </p>
+              {/* Key Findings */}
+              {insight.analysisSummary.key_findings.length > 0 && (
+                <div className="rounded-lg border border-slate-400/30 bg-slate-200/50 p-3 dark:bg-slate-800/50">
+                  <h4 className="mb-2 text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-300">
+                    📊 Key Findings
+                  </h4>
+                  <ul className="space-y-1">
+                    {insight.analysisSummary.key_findings.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300"
+                      >
+                        <span className="mt-0.5 text-slate-400">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Causal Relationships */}
+              {insight.analysisSummary.causal_relationships.length > 0 && (
+                <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
+                  <h4 className="mb-2 text-xs font-bold tracking-wider text-emerald-400 uppercase">
+                    🔗 Causal Relationships
+                  </h4>
+                  <ul className="space-y-1">
+                    {insight.analysisSummary.causal_relationships.map((item, idx) => (
+                      <li
+                        key={idx}
+                        className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200"
+                      >
+                        <span className="mt-0.5 text-emerald-400">•</span>
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Lead-Lag Analysis */}
+          {insight.leadLag && (
+            <div className="mt-4 rounded-lg border border-purple-500/30 bg-purple-500/10 p-3">
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-purple-400 uppercase">
+                ⏱️ Lead-Lag Analysis
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Sentiment Lead</p>
+                  <p className="text-lg font-bold text-purple-400">
+                    {insight.leadLag.sentiment_lead}
+                    {' '}
+                    periods
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Max Correlation</p>
+                  <p className={`text-lg font-bold ${getCorrelationStrengthColor(insight.leadLag.max_correlation)}`}>
+                    {insight.leadLag.max_correlation.toFixed(3)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Granger Causality Tests */}
+          {insight.grangerCausality && (
+            <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-amber-400 uppercase">
+                🔬 Granger Causality Tests
+              </h4>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-600 dark:text-slate-300">
+                    Sentiment → Price
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-xs font-semibold ${
+                        insight.grangerCausality.sentiment_to_price.is_causal
+                          ? 'text-emerald-400'
+                          : 'text-rose-400'
+                      }`}
+                    >
+                      {insight.grangerCausality.sentiment_to_price.is_causal ? '✓ Causal' : '✗ Not Causal'}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      (p=
+                      {formatPValue(insight.grangerCausality.sentiment_to_price.p_value)}
+                      , lag=
+                      {insight.grangerCausality.sentiment_to_price.best_lag}
+                      )
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-600 dark:text-slate-300">
+                    Fear & Greed → Price
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`text-xs font-semibold ${
+                        insight.grangerCausality.fear_greed_to_price.is_causal
+                          ? 'text-emerald-400'
+                          : 'text-rose-400'
+                      }`}
+                    >
+                      {insight.grangerCausality.fear_greed_to_price.is_causal ? '✓ Causal' : '✗ Not Causal'}
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      (p=
+                      {formatPValue(insight.grangerCausality.fear_greed_to_price.p_value)}
+                      , lag=
+                      {insight.grangerCausality.fear_greed_to_price.best_lag}
+                      )
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Significant Correlations */}
+          {insight.correlations && insight.correlations.significant_pairs.length > 0 && (
+            <div className="mt-4 rounded-lg border border-cyan-500/30 bg-cyan-500/10 p-3">
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-cyan-400 uppercase">
+                📈 Significant Correlations (
+                {insight.correlations.method}
+                )
+              </h4>
+              <div className="space-y-2">
+                {insight.correlations.significant_pairs.map((pair, idx) => (
+                  <div key={idx} className="flex items-center justify-between">
+                    <span className="text-xs text-slate-600 dark:text-slate-300">
+                      {pair.var1.replace(/_/g, ' ')}
+                      {' '}
+                      ↔
+                      {pair.var2.replace(/_/g, ' ')}
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-bold ${getCorrelationStrengthColor(pair.correlation)}`}>
+                        {pair.correlation.toFixed(3)}
+                      </span>
+                      <span className="rounded border border-slate-500/40 px-1.5 py-0.5 text-[10px] text-slate-500">
+                        {pair.strength}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        (p=
+                        {formatPValue(pair.p_value)}
+                        )
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Stationarity Tests */}
+          {insight.stationarity && (
+            <div className="mt-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10 p-3">
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-indigo-400 uppercase">
+                📉 Stationarity Tests (ADF)
+              </h4>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {Object.entries(insight.stationarity).map(([key, test]) => (
+                  <div key={key} className="rounded bg-slate-800/30 p-2">
+                    <p className="text-xs font-semibold text-slate-600 capitalize dark:text-slate-300">
+                      {key.replace(/_/g, ' ')}
+                    </p>
+                    <p
+                      className={`text-sm font-bold ${
+                        test.is_stationary ? 'text-emerald-400' : 'text-rose-400'
+                      }`}
+                    >
+                      {test.interpretation}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      ADF:
+                      {' '}
+                      {test.adf_statistic.toFixed(3)}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      p-value:
+                      {' '}
+                      {formatPValue(test.p_value)}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Data Statistics */}
+          {insight.dataStats && (
+            <div className="mt-4 rounded-lg border border-slate-400/30 bg-slate-200/30 p-3 dark:bg-slate-800/30">
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-300">
+                📊 Data Statistics
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">Observations</p>
+                  <p className="font-semibold text-slate-700 dark:text-slate-200">
+                    {insight.dataStats.observations}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">Frequency</p>
+                  <p className="font-semibold text-slate-700 dark:text-slate-200">
+                    {insight.dataStats.resample_frequency}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">Start Date</p>
+                  <p className="font-semibold text-slate-700 dark:text-slate-200">
+                    {new Date(insight.dataStats.start_date).toLocaleDateString()}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-slate-500 dark:text-slate-400">End Date</p>
+                  <p className="font-semibold text-slate-700 dark:text-slate-200">
+                    {new Date(insight.dataStats.end_date).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Legacy fields - Short-term outlook */}
+          {!insight.analysisSummary && (
+            <div className="mt-3 flex flex-wrap items-baseline justify-between gap-2">
+              <p
+                className={`text-lg font-semibold ${directionAccent[insight.direction]}`}
+              >
+                {t('news.outlookShortTerm')}
+                :
+                {' '}
+                {t(directionKeys[insight.direction])}
+              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {(insight.confidence * 100).toFixed(0)}
+                %
+                {' '}
+                {t('news.outlookConfidence')}
+              </p>
+            </div>
+          )}
+
+          {/* Plain-language summary */}
+          {insight.userSummary && (
+            <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
+              {insight.userSummary}
+            </p>
+          )}
 
           {/* Fear & Greed + Sentiment distribution */}
           <div className="mt-4 flex flex-wrap items-center gap-4">
@@ -169,11 +447,14 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
               {' '}
               {insight.sentiment}
             </span>
-            <span className="rounded-full border border-slate-700 px-3 py-1">
-              {t('news.outlookWindow')}
-              :
-              {t('news.next60Mins')}
-            </span>
+            {insight.hoursBack && (
+              <span className="rounded-full border border-slate-700 px-3 py-1">
+                Analysis Period:
+                {' '}
+                {insight.hoursBack}
+                h
+              </span>
+            )}
             {typeof insight.articlesCount === 'number'
               && insight.articlesCount > 0 && (
               <span className="rounded-full border border-slate-700 px-3 py-1">

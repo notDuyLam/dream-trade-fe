@@ -13,7 +13,7 @@ export default function DashboardLayout(props: { children: ReactNode }) {
 
       <div className="relative z-10 flex flex-1 flex-col overflow-hidden">
         <DashboardNav />
-        <div className="min-h-0 flex-1 overflow-hidden">
+        <div className="min-h-0 flex-1 overflow-x-hidden overflow-y-auto">
           {props.children}
         </div>
       </div>

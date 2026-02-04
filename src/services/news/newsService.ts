@@ -1,13 +1,12 @@
 /**
- * News Service - Crawler API Integration
- * Connects to backend crawler service to fetch news articles
+ * News Service - Crawler API Integration via Gateway
+ * All requests go through API Gateway (port 8080) which routes to crawler service
  */
 
 import type { NewsArticle, NewsFilters, NewsListResponse } from '@/types/trading';
+import { getApiBaseUrl } from '@/services/api/client';
 
-// TODO: Update this URL once crawler service port is confirmed
-// Default assumes crawler runs on same backend as market service
-const API_BASE_URL = process.env.NEXT_PUBLIC_CRAWLER_API_URL || process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_BASE_URL = getApiBaseUrl();
 
 /**
  * Calculate reading time based on word count
@@ -129,7 +128,7 @@ export const newsService = {
         params.append('sort', filters.sortBy);
       }
 
-      const url = `${API_BASE_URL}/api/v1/articles/?${params.toString()}`;
+      const url = `${API_BASE_URL}/crawler/api/v1/articles/?${params.toString()}`;
 
       const response = await fetch(url, {
         cache: 'no-store', // Always fetch fresh news
@@ -157,7 +156,7 @@ export const newsService = {
   async getArticleById(id: string): Promise<NewsArticle> {
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/v1/articles/${id}`,
+        `${API_BASE_URL}/crawler/api/v1/articles/${id}`,
         { cache: 'no-store' },
       );
 

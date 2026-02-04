@@ -18,33 +18,28 @@ export const getApiBaseUrl = () => {
 };
 
 /**
- * Base URL for Auth API (login, register, profile). Uses NEXT_PUBLIC_AUTH_API_URL, fallback to getApiBaseUrl().
+ * Base URL for Auth API via Gateway.
+ * All auth requests go through gateway which routes to auth service.
  */
 export const getAuthBaseUrl = () => {
-  if (process.env.NEXT_PUBLIC_AUTH_API_URL) {
-    return process.env.NEXT_PUBLIC_AUTH_API_URL;
-  }
   return getApiBaseUrl();
 };
 
 /**
- * Base URL for AI Analysis API (runs on port 3003 by default). Uses NEXT_PUBLIC_ANALYSIS_API_URL.
+ * Base URL for AI Analysis API via Gateway (port 8080 with /analysis/* routing).
+ * Gateway handles VipForAnalysisGuard and proxies to AI service.
+ * Uses NEXT_PUBLIC_API_URL (gateway) instead of direct service URL.
  */
 export const getAnalysisBaseUrl = () => {
-  return (
-    process.env.NEXT_PUBLIC_ANALYSIS_API_URL
-    || 'http://localhost:3003'
-  );
+  return getApiBaseUrl() || 'http://localhost:8080';
 };
 
 /**
- * Base URL for Subscription API (plans, upgrade, billing – runs on port 3006). Uses NEXT_PUBLIC_SUBSCRIPTION_API_URL.
+ * Base URL for Subscription API via Gateway.
+ * All subscription requests go through gateway which routes to subscription service.
  */
 export const getSubscriptionBaseUrl = () => {
-  return (
-    process.env.NEXT_PUBLIC_SUBSCRIPTION_API_URL
-    || 'http://localhost:3006'
-  );
+  return getApiBaseUrl();
 };
 
 const isAbsoluteUrl = (url: string) => /^https?:\/\//.test(url);
@@ -79,8 +74,9 @@ type SubscriptionRequestOptions<TBody> = {
 };
 
 /**
- * Call Subscription Service API (port 3006). Uses credentials: 'include' so auth cookie is sent.
- * Requires user to be logged in (same auth cookie as Auth API).
+ * Call Subscription Service via Gateway (port 8080).
+ * Gateway routes /subscriptions/* to subscription service.
+ * Uses credentials: 'include' so auth cookie is sent.
  */
 export async function subscriptionRequest<TResponse, TBody = unknown>(
   options: SubscriptionRequestOptions<TBody>,
