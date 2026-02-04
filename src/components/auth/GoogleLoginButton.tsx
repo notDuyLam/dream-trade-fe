@@ -39,7 +39,7 @@ export function GoogleLoginButton({
   };
 
   if (!GOOGLE_CLIENT_ID) {
-    console.error('Google Client ID is not configured');
+    // Google login is optional, return null quietly
     return null;
   }
 

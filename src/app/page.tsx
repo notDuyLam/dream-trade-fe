@@ -21,7 +21,7 @@ export default function HomePage() {
       <div className="absolute inset-0 z-0">
         <Image src="/assets/images/landing.jpg" alt="Dream Trade Landing" fill priority className="object-cover" quality={100} />
         {/* Overlay gradient */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/60 via-black/40 to-black/70" />
       </div>
 
       {/* Language Selector - Top Right */}

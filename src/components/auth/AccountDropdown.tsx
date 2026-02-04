@@ -52,7 +52,7 @@ export function AccountDropdown() {
   const isDarkMode = theme === 'dark';
 
   return (
-    <div className="relative z-[9999]" ref={dropdownRef}>
+    <div className="relative z-9999" ref={dropdownRef}>
       {/* Avatar Button */}
       <button type="button" onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 rounded-full transition-all hover:opacity-80">
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-purple-500 to-pink-500 text-sm font-semibold text-white">
@@ -62,7 +62,7 @@ export function AccountDropdown() {
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-72 rounded-2xl border border-slate-300 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+        <div className="absolute right-0 z-9999 mt-2 w-72 rounded-2xl border border-slate-300 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
           {/* User Info - Clickable */}
           <button
             type="button"

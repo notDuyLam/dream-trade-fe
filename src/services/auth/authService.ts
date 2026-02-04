@@ -17,6 +17,9 @@ export type User = {
   email: string;
   firstName: string;
   lastName: string;
+  accountType: 'regular' | 'vip';
+  isVerified?: boolean;
+  avatar?: string;
 };
 
 export type AuthResponse = {
@@ -48,6 +51,17 @@ export const authService = {
   },
 
   /**
+   * Refresh access token (uses refreshToken from httpOnly cookie)
+   */
+  async refreshToken(): Promise<AuthResponse> {
+    return apiRequest<AuthResponse>({ 
+      path: '/auth/refresh', 
+      method: 'POST',
+      body: {} // refreshToken lấy từ cookie
+    });
+  },
+
+  /**
    * Get user profile (authentication via cookie)
    */
   async getProfile(): Promise<User> {
@@ -58,10 +72,15 @@ export const authService = {
    * Logout user (cookies cleared by backend)
    */
   async logout(): Promise<void> {
-    await apiRequest<void>({
-      path: '/auth/logout',
-      method: 'POST',
-    });
+    try {
+      await apiRequest<void>({
+        path: '/auth/logout',
+        method: 'POST',
+      });
+    } catch (error) {
+      // Ignore 401 errors during logout - user is already logged out
+      console.warn('Logout request failed (already logged out?):', error);
+    }
   },
 
   /**

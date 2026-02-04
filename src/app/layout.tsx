@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { PostHogProvider } from '@/components/analytics/PostHogProvider';
+import { Footer } from '@/components/common/Footer';
 import { AppProviders } from '@/components/providers/AppProviders';
 import { QueryProvider } from '@/libs/QueryProvider';
 import { AppConfig } from '@/utils/AppConfig';
@@ -28,7 +29,12 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       <body className="bg-white text-slate-900 antialiased transition-colors duration-200 dark:bg-slate-950 dark:text-slate-50">
         <QueryProvider>
           <AppProviders>
-            <PostHogProvider>{props.children}</PostHogProvider>
+            <PostHogProvider>
+              <div className="flex min-h-screen w-full flex-col">
+                <div className="flex-1">{props.children}</div>
+                <Footer />
+              </div>
+            </PostHogProvider>
           </AppProviders>
         </QueryProvider>
       </body>
