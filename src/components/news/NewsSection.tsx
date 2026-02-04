@@ -1,14 +1,11 @@
 'use client';
 
-import type { AiInsight, NewsArticle } from '@/types/trading';
+import type { NewsArticle } from '@/types/trading';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useLanguage } from '@/contexts/LanguageContext';
-import {
-  analyzeCoin,
-  mapAnalyzeResponseToInsights,
-} from '@/services/analysis/analysisService';
+
 import { newsService } from '@/services/news/newsService';
 
 import { NewsCard } from './NewsCard';
@@ -27,7 +24,6 @@ export const NewsSection = ({
   initialPage,
 }: NewsSectionProps) => {
   const { t } = useLanguage();
-  const router = useRouter();
   const [articles, setArticles] = useState<NewsArticle[]>(initialArticles);
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -227,7 +223,7 @@ export const NewsSection = ({
         selectedCategory={selectedCategory}
         selectedCoin={selectedCoin}
         selectedSort={sortBy}
-      />  
+      />
 
       {/* Articles Grid */}
       {articles.length > 0

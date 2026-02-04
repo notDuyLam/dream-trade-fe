@@ -155,7 +155,7 @@ export function mapAnalyzeResponseToInsights(res: AnalysisApiResponse): AiInsigh
   const confidence
     = typeof (summaryObj as { average_confidence?: number }).average_confidence === 'number'
       ? Math.min(1, Math.max(0, (summaryObj as { average_confidence: number }).average_confidence))
-      : res.top_concepts?.length ?? 0 > 0
+      : (res.top_concepts?.length ?? 0) > 0
         ? Math.min(
             1,
             Math.max(

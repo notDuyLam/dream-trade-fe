@@ -43,14 +43,22 @@ function fearGreedLabel(score: number): string {
 
 function getCorrelationStrengthColor(correlation: number): string {
   const abs = Math.abs(correlation);
-  if (abs >= 0.7) return 'text-emerald-400 font-semibold';
-  if (abs >= 0.4) return 'text-blue-400 font-medium';
-  if (abs >= 0.3) return 'text-amber-400';
+  if (abs >= 0.7) {
+    return 'text-emerald-400 font-semibold';
+  }
+  if (abs >= 0.4) {
+    return 'text-blue-400 font-medium';
+  }
+  if (abs >= 0.3) {
+    return 'text-amber-400';
+  }
   return 'text-slate-400';
 }
 
 function formatPValue(pValue: number): string {
-  if (pValue < 0.001) return '< 0.001';
+  if (pValue < 0.001) {
+    return '< 0.001';
+  }
   return pValue.toFixed(4);
 }
 
@@ -76,16 +84,16 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
               {/* Actionable Insights - Highlighted */}
               {insight.analysisSummary.actionable_insights.length > 0 && (
                 <div className="rounded-lg border-2 border-blue-500/40 bg-blue-500/10 p-3">
-                  <h4 className="mb-2 text-xs font-bold text-blue-400 uppercase tracking-wider">
+                  <h4 className="mb-2 text-xs font-bold tracking-wider text-blue-400 uppercase">
                     💡 Actionable Insights
                   </h4>
                   <ul className="space-y-1">
                     {insight.analysisSummary.actionable_insights.map((item, idx) => (
                       <li
                         key={idx}
-                        className="text-sm text-slate-700 dark:text-slate-200 flex items-start gap-2"
+                        className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200"
                       >
-                        <span className="text-blue-400 mt-0.5">•</span>
+                        <span className="mt-0.5 text-blue-400">•</span>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -95,17 +103,17 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
 
               {/* Key Findings */}
               {insight.analysisSummary.key_findings.length > 0 && (
-                <div className="rounded-lg border border-slate-400/30 bg-slate-200/50 dark:bg-slate-800/50 p-3">
-                  <h4 className="mb-2 text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                <div className="rounded-lg border border-slate-400/30 bg-slate-200/50 p-3 dark:bg-slate-800/50">
+                  <h4 className="mb-2 text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-300">
                     📊 Key Findings
                   </h4>
                   <ul className="space-y-1">
                     {insight.analysisSummary.key_findings.map((item, idx) => (
                       <li
                         key={idx}
-                        className="text-sm text-slate-600 dark:text-slate-300 flex items-start gap-2"
+                        className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-300"
                       >
-                        <span className="text-slate-400 mt-0.5">•</span>
+                        <span className="mt-0.5 text-slate-400">•</span>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -116,16 +124,16 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
               {/* Causal Relationships */}
               {insight.analysisSummary.causal_relationships.length > 0 && (
                 <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3">
-                  <h4 className="mb-2 text-xs font-bold text-emerald-400 uppercase tracking-wider">
+                  <h4 className="mb-2 text-xs font-bold tracking-wider text-emerald-400 uppercase">
                     🔗 Causal Relationships
                   </h4>
                   <ul className="space-y-1">
                     {insight.analysisSummary.causal_relationships.map((item, idx) => (
                       <li
                         key={idx}
-                        className="text-sm text-slate-700 dark:text-slate-200 flex items-start gap-2"
+                        className="flex items-start gap-2 text-sm text-slate-700 dark:text-slate-200"
                       >
-                        <span className="text-emerald-400 mt-0.5">•</span>
+                        <span className="mt-0.5 text-emerald-400">•</span>
                         <span>{item}</span>
                       </li>
                     ))}
@@ -138,14 +146,16 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
           {/* Lead-Lag Analysis */}
           {insight.leadLag && (
             <div className="mt-4 rounded-lg border border-purple-500/30 bg-purple-500/10 p-3">
-              <h4 className="mb-2 text-xs font-bold text-purple-400 uppercase tracking-wider">
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-purple-400 uppercase">
                 ⏱️ Lead-Lag Analysis
               </h4>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-slate-500 dark:text-slate-400">Sentiment Lead</p>
                   <p className="text-lg font-bold text-purple-400">
-                    {insight.leadLag.sentiment_lead} periods
+                    {insight.leadLag.sentiment_lead}
+                    {' '}
+                    periods
                   </p>
                 </div>
                 <div>
@@ -161,7 +171,7 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
           {/* Granger Causality Tests */}
           {insight.grangerCausality && (
             <div className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3">
-              <h4 className="mb-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-amber-400 uppercase">
                 🔬 Granger Causality Tests
               </h4>
               <div className="space-y-2">
@@ -180,7 +190,11 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
                       {insight.grangerCausality.sentiment_to_price.is_causal ? '✓ Causal' : '✗ Not Causal'}
                     </span>
                     <span className="text-xs text-slate-500">
-                      (p={formatPValue(insight.grangerCausality.sentiment_to_price.p_value)}, lag={insight.grangerCausality.sentiment_to_price.best_lag})
+                      (p=
+                      {formatPValue(insight.grangerCausality.sentiment_to_price.p_value)}
+                      , lag=
+                      {insight.grangerCausality.sentiment_to_price.best_lag}
+                      )
                     </span>
                   </div>
                 </div>
@@ -199,7 +213,11 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
                       {insight.grangerCausality.fear_greed_to_price.is_causal ? '✓ Causal' : '✗ Not Causal'}
                     </span>
                     <span className="text-xs text-slate-500">
-                      (p={formatPValue(insight.grangerCausality.fear_greed_to_price.p_value)}, lag={insight.grangerCausality.fear_greed_to_price.best_lag})
+                      (p=
+                      {formatPValue(insight.grangerCausality.fear_greed_to_price.p_value)}
+                      , lag=
+                      {insight.grangerCausality.fear_greed_to_price.best_lag}
+                      )
                     </span>
                   </div>
                 </div>
@@ -210,14 +228,19 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
           {/* Significant Correlations */}
           {insight.correlations && insight.correlations.significant_pairs.length > 0 && (
             <div className="mt-4 rounded-lg border border-cyan-500/30 bg-cyan-500/10 p-3">
-              <h4 className="mb-2 text-xs font-bold text-cyan-400 uppercase tracking-wider">
-                📈 Significant Correlations ({insight.correlations.method})
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-cyan-400 uppercase">
+                📈 Significant Correlations (
+                {insight.correlations.method}
+                )
               </h4>
               <div className="space-y-2">
                 {insight.correlations.significant_pairs.map((pair, idx) => (
                   <div key={idx} className="flex items-center justify-between">
                     <span className="text-xs text-slate-600 dark:text-slate-300">
-                      {pair.var1.replace(/_/g, ' ')} ↔ {pair.var2.replace(/_/g, ' ')}
+                      {pair.var1.replace(/_/g, ' ')}
+                      {' '}
+                      ↔
+                      {pair.var2.replace(/_/g, ' ')}
                     </span>
                     <div className="flex items-center gap-2">
                       <span className={`text-sm font-bold ${getCorrelationStrengthColor(pair.correlation)}`}>
@@ -227,7 +250,9 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
                         {pair.strength}
                       </span>
                       <span className="text-xs text-slate-500">
-                        (p={formatPValue(pair.p_value)})
+                        (p=
+                        {formatPValue(pair.p_value)}
+                        )
                       </span>
                     </div>
                   </div>
@@ -239,13 +264,13 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
           {/* Stationarity Tests */}
           {insight.stationarity && (
             <div className="mt-4 rounded-lg border border-indigo-500/30 bg-indigo-500/10 p-3">
-              <h4 className="mb-2 text-xs font-bold text-indigo-400 uppercase tracking-wider">
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-indigo-400 uppercase">
                 📉 Stationarity Tests (ADF)
               </h4>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 {Object.entries(insight.stationarity).map(([key, test]) => (
                   <div key={key} className="rounded bg-slate-800/30 p-2">
-                    <p className="text-xs font-semibold text-slate-600 dark:text-slate-300 capitalize">
+                    <p className="text-xs font-semibold text-slate-600 capitalize dark:text-slate-300">
                       {key.replace(/_/g, ' ')}
                     </p>
                     <p
@@ -256,10 +281,14 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
                       {test.interpretation}
                     </p>
                     <p className="text-xs text-slate-500">
-                      ADF: {test.adf_statistic.toFixed(3)}
+                      ADF:
+                      {' '}
+                      {test.adf_statistic.toFixed(3)}
                     </p>
                     <p className="text-xs text-slate-500">
-                      p-value: {formatPValue(test.p_value)}
+                      p-value:
+                      {' '}
+                      {formatPValue(test.p_value)}
                     </p>
                   </div>
                 ))}
@@ -269,8 +298,8 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
 
           {/* Data Statistics */}
           {insight.dataStats && (
-            <div className="mt-4 rounded-lg border border-slate-400/30 bg-slate-200/30 dark:bg-slate-800/30 p-3">
-              <h4 className="mb-2 text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+            <div className="mt-4 rounded-lg border border-slate-400/30 bg-slate-200/30 p-3 dark:bg-slate-800/30">
+              <h4 className="mb-2 text-xs font-bold tracking-wider text-slate-600 uppercase dark:text-slate-300">
                 📊 Data Statistics
               </h4>
               <div className="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
@@ -420,7 +449,10 @@ export const AiInsightsPanel = (props: AiInsightsPanelProps) => {
             </span>
             {insight.hoursBack && (
               <span className="rounded-full border border-slate-700 px-3 py-1">
-                Analysis Period: {insight.hoursBack}h
+                Analysis Period:
+                {' '}
+                {insight.hoursBack}
+                h
               </span>
             )}
             {typeof insight.articlesCount === 'number'

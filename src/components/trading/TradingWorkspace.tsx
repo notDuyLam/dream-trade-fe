@@ -270,7 +270,7 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
   return (
     <div className="flex min-h-screen flex-col bg-transparent xl:h-screen xl:overflow-hidden">
 
-      <div className="grid flex-1 gap-2 p-2 lg:gap-3 lg:p-3 xl:grid-cols-[1fr_360px] xl:min-h-0">
+      <div className="grid flex-1 gap-2 p-2 lg:gap-3 lg:p-3 xl:min-h-0 xl:grid-cols-[1fr_360px]">
         {/* Main Chart Section */}
         <section className="flex min-h-0 flex-col overflow-hidden rounded-[20px] border border-slate-200/50 bg-white/80 p-3 shadow-xl shadow-black/5 backdrop-blur-xl lg:rounded-[24px] lg:p-4 dark:border-slate-800/50 dark:bg-slate-900/40">
           <div className="flex flex-col gap-2">
