@@ -1,3 +1,5 @@
+import { useAuthStore } from '@/stores/authStore';
+
 type RequestOptions<TBody> = {
   path: string;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
@@ -90,7 +92,12 @@ export async function apiRequest<TResponse, TBody = unknown>(options: RequestOpt
           });
 
           if (!refreshResponse.ok) {
-            throw new Error('Refresh token failed');
+            // Refresh token cũng hết hạn - clear auth và redirect về sign-in
+            if (typeof window !== 'undefined') {
+              useAuthStore.getState().clearAuth();
+              window.location.href = '/sign-in';
+            }
+            throw new Error('Session expired. Redirecting to login...');
           }
         } finally {
           isRefreshing = false;

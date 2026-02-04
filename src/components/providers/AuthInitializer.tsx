@@ -18,7 +18,7 @@ import { useAuthStore } from '@/stores/authStore';
  */
 export function AuthInitializer() {
   const router = useRouter();
-  const { isAuthenticated, setAuth, clearAuth } = useAuthStore();
+  const { isAuthenticated, setAuth } = useAuthStore();
 
   useEffect(() => {
     // Only verify if user appears to be authenticated (from persisted state)
@@ -32,11 +32,10 @@ export function AuthInitializer() {
         const user = await authService.getProfile();
         // Session is valid, update/sync user data
         setAuth(user);
+        router.push('/dashboard');
       } catch (error) {
         // Session is invalid (401) or expired, clear auth state and redirect
         console.warn('Session verification failed, clearing auth:', error);
-        clearAuth();
-        router.push('/sign-in');
       }
     };
 
