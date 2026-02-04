@@ -51,6 +51,17 @@ export const authService = {
   },
 
   /**
+   * Refresh access token (uses refreshToken from httpOnly cookie)
+   */
+  async refreshToken(): Promise<AuthResponse> {
+    return apiRequest<AuthResponse>({ 
+      path: '/auth/refresh', 
+      method: 'POST',
+      body: {} // refreshToken lấy từ cookie
+    });
+  },
+
+  /**
    * Get user profile (authentication via cookie)
    */
   async getProfile(): Promise<User> {

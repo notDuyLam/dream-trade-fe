@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { authService } from '@/services/auth/authService';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -16,6 +17,7 @@ import { useAuthStore } from '@/stores/authStore';
  * 3. Update auth state based on API response
  */
 export function AuthInitializer() {
+  const router = useRouter();
   const { isAuthenticated, setAuth, clearAuth } = useAuthStore();
 
   useEffect(() => {
@@ -31,9 +33,10 @@ export function AuthInitializer() {
         // Session is valid, update/sync user data
         setAuth(user);
       } catch (error) {
-        // Session is invalid (401) or expired, clear auth state
+        // Session is invalid (401) or expired, clear auth state and redirect
         console.warn('Session verification failed, clearing auth:', error);
         clearAuth();
+        router.push('/sign-in');
       }
     };
 

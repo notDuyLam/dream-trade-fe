@@ -44,20 +44,65 @@ export const getSubscriptionBaseUrl = () => {
 
 const isAbsoluteUrl = (url: string) => /^https?:\/\//.test(url);
 
+// Biến để tránh multiple concurrent refresh calls
+let isRefreshing = false;
+let refreshPromise: Promise<void> | null = null;
+
 export async function apiRequest<TResponse, TBody = unknown>(options: RequestOptions<TBody>): Promise<TResponse> {
   const baseUrl = options.path.startsWith('/auth') ? getAuthBaseUrl() : getApiBaseUrl();
   const targetUrl = isAbsoluteUrl(options.path) ? options.path : `${baseUrl}${options.path}`;
 
-  const response = await fetch(targetUrl, {
-    method: options.method ?? 'GET',
-    body: options.body ? JSON.stringify(options.body) : undefined,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include', // Important: Send cookies with requests
-    cache: options.cache ?? 'no-store',
-    next: options.revalidate === false ? undefined : { revalidate: options.revalidate ?? 0 },
-  });
+  const makeRequest = async (): Promise<Response> => {
+    return fetch(targetUrl, {
+      method: options.method ?? 'GET',
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include', // Important: Send cookies with requests
+      cache: options.cache ?? 'no-store',
+      next: options.revalidate === false ? undefined : { revalidate: options.revalidate ?? 0 },
+    });
+  };
+
+  let response = await makeRequest();
+
+  // Nếu gặp 401 và không phải endpoint auth (tránh infinite loop)
+  if (response.status === 401 && !options.path.includes('/auth/refresh') && !options.path.includes('/auth/login')) {
+    // Nếu đang có request refresh khác đang chạy, đợi nó xong
+    if (isRefreshing && refreshPromise) {
+      await refreshPromise;
+      // Retry request với token mới
+      response = await makeRequest();
+    } else {
+      // Thực hiện refresh token
+      isRefreshing = true;
+      refreshPromise = (async () => {
+        try {
+          const refreshUrl = `${getAuthBaseUrl()}/auth/refresh`;
+          const refreshResponse = await fetch(refreshUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({}),
+          });
+
+          if (!refreshResponse.ok) {
+            throw new Error('Refresh token failed');
+          }
+        } finally {
+          isRefreshing = false;
+          refreshPromise = null;
+        }
+      })();
+
+      await refreshPromise;
+      // Retry request với token mới
+      response = await makeRequest();
+    }
+  }
 
   if (!response.ok) {
     const message = await response.text();
