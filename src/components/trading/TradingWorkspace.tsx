@@ -1,14 +1,12 @@
 'use client';
 
-import type { AiInsight, CandleDataPoint, ChartDisplay, RealtimePrice, Timeframe, TradingSymbol } from '@/types/trading';
-import { useRouter } from 'next/navigation';
+import type { CandleDataPoint, ChartDisplay, RealtimePrice, Timeframe, TradingSymbol } from '@/types/trading';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { analyzeCoin, mapAnalyzeResponseToInsights } from '@/services/analysis/analysisService';
 import { CoinService } from '@/services/coins/coinService';
 import { marketService } from '@/services/market/marketService';
 import { formatPrice, roundPrice } from '@/utils/pricePrecision';
-import { AiInsightsPanel } from './AiInsightsPanel';
+import { AiAnalysisModal } from './AiAnalysisModal';
 import { SymbolSelector } from './SymbolSelector';
 
 import { TimeframeSelector } from './TimeframeSelector';
@@ -50,7 +48,6 @@ const fallbackQuote = (symbol: TradingSymbol, candle?: CandleDataPoint): Realtim
 
 export const TradingWorkspace = (props: TradingWorkspaceProps) => {
   const { t } = useLanguage();
-  const router = useRouter();
   const [symbol, setSymbol] = useState<TradingSymbol>(props.defaultSymbol);
   const [timeframe, setTimeframe] = useState<Timeframe>(props.defaultTimeframe);
   const [candles, setCandles] = useState<CandleDataPoint[]>(() => props.initialCandles);
@@ -60,37 +57,8 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
   const [watchlistQuotes, setWatchlistQuotes] = useState<Partial<Record<TradingSymbol, RealtimePrice | null>>>({});
   const [watchlistSymbols] = useState<TradingSymbol[]>(() => getWatchlistSymbols());
 
-  // AI Analysis state
-  const [aiInsights, setAiInsights] = useState<AiInsight[] | null>(null);
-  const [aiAnalysisLoading, setAiAnalysisLoading] = useState(false);
-  const [aiAnalysisError, setAiAnalysisError] = useState<{
-    status: 401 | 403 | 404 | 503;
-    message?: string;
-  } | null>(null);
-
-  const runAiAnalysis = useCallback(async () => {
-    setAiAnalysisLoading(true);
-    setAiAnalysisError(null);
-    // Extract coin from symbol (e.g., "BTCUSDT" -> "BTC")
-    const coin = symbol.replace('USDT', '');
-    const result = await analyzeCoin(coin, 24);
-    setAiAnalysisLoading(false);
-
-    if (result.success) {
-      setAiInsights(mapAnalyzeResponseToInsights(result.data));
-      return;
-    }
-
-    if (result.status === 401) {
-      router.push('/sign-in');
-      return;
-    }
-
-    setAiAnalysisError({
-      status: result.status,
-      message: result.message,
-    });
-  }, [symbol, router]);
+  // AI Analysis Modal state
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const updateWorkspace = useCallback(async (nextSymbol: TradingSymbol, nextTimeframe: Timeframe) => {
     setIsLoading(true);
@@ -298,6 +266,18 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
                   </div>
                 </div>
               </div>
+
+              {/* AI Analysis Button */}
+              <button
+                type="button"
+                onClick={() => setIsAiModalOpen(true)}
+                className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition-all hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/40 dark:from-emerald-600 dark:to-emerald-700"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                {t('news.aiAnalysis')}
+              </button>
             </div>
 
             <div className="flex items-center justify-between gap-4">
@@ -362,89 +342,6 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
               </div>
             </section>
 
-            {/* AI Analysis Section */}
-            <section className="space-y-3 rounded-xl border border-slate-200/50 bg-slate-50/50 p-4 dark:border-slate-800/50 dark:bg-slate-950/40">
-              <div>
-                <p className="text-[10px] font-medium tracking-[0.2em] text-slate-500 uppercase">AI Insights</p>
-                <h3 className="text-sm font-bold text-slate-900 dark:text-white">{t('news.aiAnalysis')}</h3>
-                <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                  {t('news.analysisDescription')}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => void runAiAnalysis()}
-                disabled={aiAnalysisLoading}
-                className="w-full rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white transition-all hover:bg-emerald-600 disabled:opacity-60 dark:bg-emerald-600 dark:hover:bg-emerald-500"
-              >
-                {aiAnalysisLoading
-                  ? t('news.analysisLoading')
-                  : t('news.runAnalysis')}
-              </button>
-              {aiAnalysisLoading && (
-                <div className="flex items-center justify-center gap-2 text-sm text-slate-500">
-                  <svg
-                    className="h-4 w-4 animate-spin text-emerald-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  {t('news.analysisLoading')}
-                </div>
-              )}
-              {aiAnalysisError?.status === 403 && (
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/40">
-                  <p className="text-xs font-medium text-amber-800 dark:text-amber-200">
-                    {t('news.vipOnly')}
-                  </p>
-                  <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-                    {aiAnalysisError.message}
-                  </p>
-                  <a
-                    href="/dashboard/settings"
-                    className="mt-2 inline-block rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 dark:bg-amber-600 dark:hover:bg-amber-500"
-                  >
-                    {t('news.upgradeCta')}
-                  </a>
-                </div>
-              )}
-              {(aiAnalysisError?.status === 404 || aiAnalysisError?.status === 503) && (
-                <div className="rounded-xl border border-slate-300 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800/50">
-                  <p className="text-xs font-medium text-slate-700 dark:text-slate-300">
-                    {t('news.analysisUnavailable')}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-600 dark:text-slate-400">
-                    {aiAnalysisError.message}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => void runAiAnalysis()}
-                    className="mt-2 rounded-lg bg-slate-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-slate-700 dark:bg-slate-500 dark:hover:bg-slate-600"
-                  >
-                    {t('news.retry')}
-                  </button>
-                </div>
-              )}
-              {aiInsights && aiInsights.length > 0 && (
-                <div className="max-h-[400px] overflow-y-auto">
-                  <AiInsightsPanel insights={aiInsights} />
-                </div>
-              )}
-            </section>
-
             {/* Asset Detail Card */}
             <section className="space-y-4 rounded-xl border border-slate-200/50 bg-slate-50/50 p-4 dark:border-slate-800/50 dark:bg-slate-950/40">
               <div className="flex items-center justify-between">
@@ -489,6 +386,13 @@ export const TradingWorkspace = (props: TradingWorkspaceProps) => {
           </div>
         </aside>
       </div>
+
+      {/* AI Analysis Modal */}
+      <AiAnalysisModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        symbol={symbol}
+      />
     </div>
   );
 };

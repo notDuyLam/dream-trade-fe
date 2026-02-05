@@ -1,7 +1,6 @@
 'use client';
 
 import type { NewsArticle } from '@/types/trading';
-import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { useLanguage } from '@/contexts/LanguageContext';

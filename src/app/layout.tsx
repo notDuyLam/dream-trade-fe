@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import { PostHogProvider } from '@/components/analytics/PostHogProvider';
-import { Footer } from '@/components/common/Footer';
 import { AppProviders } from '@/components/providers/AppProviders';
 import { QueryProvider } from '@/libs/QueryProvider';
 import { AppConfig } from '@/utils/AppConfig';
@@ -32,7 +31,6 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             <PostHogProvider>
               <div className="flex min-h-screen w-full flex-col">
                 <div className="flex-1">{props.children}</div>
-                <Footer />
               </div>
             </PostHogProvider>
           </AppProviders>

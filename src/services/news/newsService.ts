@@ -4,9 +4,9 @@
  */
 
 import type { NewsArticle, NewsFilters, NewsListResponse } from '@/types/trading';
-import { getApiBaseUrl } from '@/services/api/client';
+import { getCrawlerBaseUrl } from '@/services/api/client';
 
-const API_BASE_URL = getApiBaseUrl();
+const API_BASE_URL = getCrawlerBaseUrl();
 
 /**
  * Calculate reading time based on word count

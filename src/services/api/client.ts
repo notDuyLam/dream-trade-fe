@@ -24,7 +24,7 @@ export const getApiBaseUrl = () => {
  * All auth requests go through gateway which routes to auth service.
  */
 export const getAuthBaseUrl = () => {
-  return getApiBaseUrl();
+  return process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
 };
 
 /**
@@ -33,7 +33,7 @@ export const getAuthBaseUrl = () => {
  * Uses NEXT_PUBLIC_API_URL (gateway) instead of direct service URL.
  */
 export const getAnalysisBaseUrl = () => {
-  return getApiBaseUrl() || 'http://localhost:8080';
+  return process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
 };
 
 /**
@@ -41,7 +41,15 @@ export const getAnalysisBaseUrl = () => {
  * All subscription requests go through gateway which routes to subscription service.
  */
 export const getSubscriptionBaseUrl = () => {
-  return getApiBaseUrl();
+  return process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
+};
+
+/**
+ * Base URL for Crawler/News API via Gateway (port 8080).
+ * Gateway routes /crawler/* to crawler service.
+ */
+export const getCrawlerBaseUrl = () => {
+  return process.env.NEXT_PUBLIC_GATEWAY_URL || 'http://localhost:8080';
 };
 
 const isAbsoluteUrl = (url: string) => /^https?:\/\//.test(url);

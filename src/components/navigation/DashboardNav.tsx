@@ -13,7 +13,7 @@ const AccountDropdown = dynamic(
     })),
   {
     ssr: false,
-  }
+  },
 );
 
 type NavItem = {
@@ -23,10 +23,8 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { href: '/dashboard', labelKey: 'nav.workspace' },
-  { href: '/dashboard/insights', labelKey: 'nav.insights' },
   { href: '/dashboard/news', labelKey: 'nav.news' },
   { href: '/dashboard/subscription', labelKey: 'nav.subscription' },
-  { href: '/dashboard/settings', labelKey: 'nav.settings' },
 ];
 
 export const DashboardNav = () => {
@@ -53,21 +51,20 @@ export const DashboardNav = () => {
         </Link>
 
         <div className="flex items-center gap-1">
-          {navItems.map(item => {
+          {navItems.map((item) => {
             const active = isActive(item.href);
             return (
-              <Link key={item.href} href={item.href}>
-                <button
-                  type="button"
-                  className={[
-                    'rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-300',
-                    active
-                      ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
-                      : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900/50 dark:hover:text-white',
-                  ].join(' ')}
-                >
-                  {t(item.labelKey)}
-                </button>
+              <Link
+                key={item.href}
+                href={item.href}
+                className={[
+                  'rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-300',
+                  active
+                    ? 'bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-white'
+                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900/50 dark:hover:text-white',
+                ].join(' ')}
+              >
+                {t(item.labelKey)}
               </Link>
             );
           })}
