@@ -6,7 +6,7 @@
  * Uses credentials: 'include' for cookie auth with JWT.
  */
 
-import type { AiInsight, SentimentLabel, Timeframe, TradingSymbol } from '@/types/trading';
+import type { AiInsight, AnalysisEvent, ChartData, SentimentLabel, Timeframe, TradingSymbol } from '@/types/trading';
 import { getAnalysisBaseUrl } from '@/services/api/client';
 
 /** Backend analyze response shape (AI service) */
@@ -98,6 +98,8 @@ export type AnalysisApiResponse = {
     end_date: string;
     resample_frequency: string;
   };
+  events?: AnalysisEvent[];
+  chart_data?: ChartData;
 };
 
 const COIN_TO_SYMBOL: Record<string, TradingSymbol> = {
@@ -156,32 +158,78 @@ export function mapAnalyzeResponseToInsights(res: AnalysisApiResponse): AiInsigh
     = typeof (summaryObj as { average_confidence?: number }).average_confidence === 'number'
       ? Math.min(1, Math.max(0, (summaryObj as { average_confidence: number }).average_confidence))
       : (res.top_concepts?.length ?? 0) > 0
-        ? Math.min(
-            1,
-            Math.max(
-              0,
-              res.top_concepts!.reduce(
-                (a, c) => a + (typeof c.score === 'number' ? c.score : 0),
+          ? Math.min(
+              1,
+              Math.max(
                 0,
-              ) / res.top_concepts!.length,
-            ),
-          )
-        : 0.5;
+                res.top_concepts!.reduce(
+                  (a, c) => a + (typeof c.score === 'number' ? c.score : 0),
+                  0,
+                ) / res.top_concepts!.length,
+              ),
+            )
+          : 0.5;
 
-  const summaryStr
-    = typeof res.summary === 'string'
-      ? res.summary
-      : 'summary' in summaryObj
-        ? String((summaryObj as { summary?: string }).summary ?? 'AI analysis')
-        : 'AI analysis';
+  // Extract summary text
+  let summaryStr = 'AI analysis';
+  if (typeof res.summary === 'string') {
+    summaryStr = res.summary;
+  } else if (summaryObj) {
+    const causalSummary = summaryObj as {
+      key_findings?: string[];
+      actionable_insights?: string[];
+      causal_relationships?: string[];
+    };
 
-  const reasoning = (res.top_concepts ?? [])
-    .slice(0, 7)
-    .map(
-      (c: { name: string; count?: number; score?: number }) =>
-        `${c.name}: ${typeof c.count === 'number' ? c.count : (c.score ?? 0).toFixed(2)}`,
-    );
+    // Use first actionable insight or key finding as summary
+    const allInsights = [
+      ...(causalSummary.actionable_insights ?? []),
+      ...(causalSummary.key_findings ?? []),
+      ...(causalSummary.causal_relationships ?? []),
+    ];
 
+    if (allInsights.length > 0) {
+      summaryStr = allInsights[0]!;
+    }
+  }
+
+  // Build reasoning from multiple sources
+  let reasoning: string[] = [];
+
+  // 1. Try top_concepts first (for sentiment analysis)
+  if (res.top_concepts && res.top_concepts.length > 0) {
+    reasoning = res.top_concepts
+      .slice(0, 7)
+      .map(
+        (c: { name: string; count?: number; score?: number }) =>
+          `${c.name}: ${typeof c.count === 'number' ? c.count : (c.score ?? 0).toFixed(2)}`,
+      );
+  }
+
+  // 2. If no top_concepts, try analysisSummary (for causal analysis)
+  if (reasoning.length === 0 && summaryObj) {
+    const causalSummary = summaryObj as {
+      key_findings?: string[];
+      actionable_insights?: string[];
+      causal_relationships?: string[];
+    };
+
+    // Combine all insights (skip the first one as it's used in summary)
+    const findings = causalSummary.key_findings ?? [];
+    const insights = causalSummary.actionable_insights ?? [];
+    const relationships = causalSummary.causal_relationships ?? [];
+
+    const allInsights = [...insights, ...findings, ...relationships];
+    // Skip first item if it's used as summary
+    reasoning = allInsights.slice(1, 8);
+
+    // If only 1 insight total, use it in reasoning too
+    if (allInsights.length === 1) {
+      reasoning = allInsights;
+    }
+  }
+
+  // 3. Fallback to top_articles if still empty
   if (reasoning.length === 0 && (res.top_articles ?? []).length > 0) {
     res.top_articles!.slice(0, 5).forEach((a: { title?: string }) => {
       if (a.title) {
@@ -255,6 +303,9 @@ export function mapAnalyzeResponseToInsights(res: AnalysisApiResponse): AiInsigh
           actionable_insights: (summaryObj as { actionable_insights?: string[] }).actionable_insights ?? [],
         }
       : undefined,
+    events: res.events,
+    chartData: res.chart_data,
+
   };
 
   return [insight];
@@ -280,14 +331,29 @@ export async function analyzeCoin(
 
   let response: Response;
   try {
+    // Add 30-second timeout to prevent infinite loading
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
     response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify(body),
       cache: 'no-store',
+      signal: controller.signal,
     });
+
+    clearTimeout(timeoutId);
   } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      return {
+        success: false,
+        status: 503,
+        message: 'Request timeout. AI analysis is taking too long. Please try again later.',
+      };
+    }
+
     const msg
       = err instanceof TypeError && (err.message === 'Failed to fetch' || err.message.includes('fetch'))
         ? 'Cannot connect to API Gateway. Make sure it is running (port 8080).'

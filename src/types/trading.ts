@@ -133,6 +133,23 @@ export type AnalysisSummary = {
   actionable_insights: string[];
 };
 
+export type AnalysisEvent = {
+  timestamp: string;
+  type: 'price_movement' | 'sentiment_spike';
+  description: string;
+  score: number;
+  value: number;
+};
+
+export type ChartData = {
+  timestamps: string[];
+  price: number[];
+  price_change: number[];
+  sentiment: number[];
+  fear_greed: number[];
+  volume: number[];
+};
+
 export type AiInsight = {
   id: string;
   symbol: TradingSymbol;
@@ -176,6 +193,10 @@ export type AiInsight = {
   dataStats?: DataStats;
   /** Analysis summary with findings */
   analysisSummary?: AnalysisSummary;
+  /** Significant events detected */
+  events?: AnalysisEvent[];
+  /** Time-series data for charting */
+  chartData?: ChartData;
 };
 
 export type ChartTheme = 'dark' | 'light';
