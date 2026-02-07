@@ -335,10 +335,11 @@ export async function analyzeCoin(
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-    response = await fetch(url, {
+    // Import fetchWithAuth at the top of the file for consistent auth handling
+    const { fetchWithAuth } = await import('@/services/api/client');
+    
+    response = await fetchWithAuth(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
       body: JSON.stringify(body),
       cache: 'no-store',
       signal: controller.signal,
