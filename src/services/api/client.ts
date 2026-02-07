@@ -105,7 +105,7 @@ export async function fetchWithAuth(url: string, options: RequestInit = {}): Pro
             // Refresh failed - clear auth and redirect
             if (typeof window !== 'undefined') {
               useAuthStore.getState().clearAuth();
-              // window.location.href = '/sign-in';
+              window.location.href = '/sign-in';
             }
             throw new Error('Session expired. Redirecting to login...');
           }
