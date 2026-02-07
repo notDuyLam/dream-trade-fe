@@ -68,6 +68,7 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
+    "@types/recharts": "^1.8.29",
     "@vitejs/plugin-react": "^5.1.1",
     "@vitest/browser": "^4.0.15",
     "@vitest/browser-playwright": "^4.0.15",
