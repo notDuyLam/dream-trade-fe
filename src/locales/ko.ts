@@ -109,4 +109,9 @@ export const ko = {
   'news.outlookWindow': '전망 구간',
   'news.next60Mins': '60분 후까지',
   'news.articlesAnalyzed': '개 기사 분석',
+
+  // VIP Upgrade Popup
+  'upgrade.popupTitle': 'AI 분석 잠금 해제',
+  'upgrade.popupDesc': 'VIP로 업그레이드하여 AI 기반 시장 분석과 고급 애널리틱스를 이용하세요.',
+  'upgrade.popupCta': '지금 업그레이드',
 };

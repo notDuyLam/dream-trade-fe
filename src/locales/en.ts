@@ -129,6 +129,11 @@ export const en = {
   'subscription.endDate': 'End date',
   'subscription.renewalDate': 'Renewal date',
   'subscription.noBillingHistory': 'No billing history yet',
+
+  // VIP Upgrade Popup
+  'upgrade.popupTitle': 'Unlock AI Analysis',
+  'upgrade.popupDesc': 'Upgrade to VIP to access AI-powered market insights and advanced analytics.',
+  'upgrade.popupCta': 'Upgrade Now',
 };
 
 export type TranslationKeys = keyof typeof en;

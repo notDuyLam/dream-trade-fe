@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useLogout } from '@/hooks/useAuth';
 import { useAuthStore } from '@/stores/authStore';
 import { useThemeStore } from '@/stores/themeStore';
+import { AccountTypeBadge } from '@/components/common/UpgradeVipPopup';
 
 export function AccountDropdown() {
   const { user, isAuthenticated } = useAuthStore();
@@ -53,8 +54,9 @@ export function AccountDropdown() {
 
   return (
     <div className="relative z-9999" ref={dropdownRef}>
-      {/* Avatar Button */}
+      {/* Avatar Button + Account Type Badge */}
       <button type="button" onClick={() => setIsOpen(!isOpen)} className="flex items-center gap-2 rounded-full transition-all hover:opacity-80">
+        <AccountTypeBadge />
         <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-purple-500 to-pink-500 text-sm font-semibold text-white">
           {getInitials()}
         </div>
@@ -68,7 +70,7 @@ export function AccountDropdown() {
             type="button"
             onClick={() => {
               setIsOpen(false);
-              window.location.href = '/profile';
+              window.location.href = '/dashboard/profile';
             }}
             className="w-full border-b border-slate-200 px-4 py-4 transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50"
           >

@@ -129,4 +129,9 @@ export const vi = {
   'subscription.endDate': 'Ngày kết thúc',
   'subscription.renewalDate': 'Ngày gia hạn',
   'subscription.noBillingHistory': 'Chưa có lịch sử thanh toán',
+
+  // VIP Upgrade Popup
+  'upgrade.popupTitle': 'Mở khóa phân tích AI',
+  'upgrade.popupDesc': 'Nâng cấp VIP để sử dụng phân tích thị trường bằng AI và các tính năng cao cấp.',
+  'upgrade.popupCta': 'Nâng cấp ngay',
 };

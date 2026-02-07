@@ -13,6 +13,7 @@ import { useAuthStore } from '@/stores/authStore';
 export function SubscriptionPageContent() {
   const { t } = useLanguage();
   const isAuthenticated = useAuthStore(s => s.isAuthenticated);
+  const updateUser = useAuthStore(s => s.updateUser);
 
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(
     null,
@@ -66,6 +67,8 @@ export function SubscriptionPageContent() {
     try {
       const updated = await subscriptionService.upgrade({ plan: 'vip' });
       setSubscription(updated);
+      // Sync account type to Zustand immediately
+      updateUser({ accountType: 'vip' });
       setMessage(t('subscription.upgradeSuccess'));
       await fetchData();
     } catch (e) {
@@ -87,6 +90,8 @@ export function SubscriptionPageContent() {
     try {
       const updated = await subscriptionService.cancel();
       setSubscription(updated);
+      // Sync account type to Zustand immediately
+      updateUser({ accountType: 'regular' });
       setMessage(t('subscription.cancelSuccess'));
       await fetchData();
     } catch (e) {
