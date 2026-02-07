@@ -54,7 +54,6 @@ export function GoogleLoginButton({
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={handleGoogleError}
-          useOneTap
           text="continue_with"
           width="100%"
         />

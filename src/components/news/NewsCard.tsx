@@ -107,7 +107,7 @@ export const NewsCard = ({ article }: NewsCardProps) => {
           {/* Tags */}
           {article.tags && article.tags.length > 0 && (
             <div className="mb-4 flex flex-wrap gap-2">
-              {article.tags.slice(0, 3).map(tag => (
+              {[...new Set(article.tags)].slice(0, 3).map(tag => (
                 <span
                   key={`${article._id}-${tag}`}
                   className="inline-block rounded-lg bg-slate-200 px-2.5 py-1 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"

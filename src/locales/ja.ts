@@ -109,4 +109,9 @@ export const ja = {
   'news.outlookWindow': '見通し期間',
   'news.next60Mins': '60分後まで',
   'news.articlesAnalyzed': '件の記事を分析',
+
+  // VIP Upgrade Popup
+  'upgrade.popupTitle': 'AI分析を解放',
+  'upgrade.popupDesc': 'VIPにアップグレードして、AIによる市場分析と高度なアナリティクスを利用しましょう。',
+  'upgrade.popupCta': '今すぐアップグレード',
 };
