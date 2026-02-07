@@ -1,5 +1,6 @@
 import type { NewsArticle } from '@/types/trading';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 import { normalizeCategory } from '@/services/news/newsService';
@@ -44,14 +45,12 @@ export const NewsCard = ({ article }: NewsCardProps) => {
     <article
       className="group relative overflow-hidden rounded-2xl border border-slate-300 bg-slate-100/80 shadow-lg shadow-black/5 backdrop-blur-sm transition-all duration-300 hover:scale-[1.02] hover:border-emerald-400/50 hover:shadow-2xl hover:shadow-emerald-500/20 dark:border-slate-800 dark:bg-slate-900/60 dark:shadow-black/20 dark:hover:border-emerald-500/50"
     >
-      <a
-        href={article.url}
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        href={`/dashboard/news/${article._id}`}
         className="block"
       >
         {/* Featured Image */}
-        <div className="relative h-52 w-full overflow-hidden bg-gradient-to-br from-slate-700 to-slate-900">
+        <div className="relative h-52 w-full overflow-hidden bg-linear-to-br from-slate-700 to-slate-900">
           {article.image_url
             ? (
                 <Image
@@ -81,7 +80,7 @@ export const NewsCard = ({ article }: NewsCardProps) => {
               )}
 
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/70 via-black/30 to-transparent" />
 
           {/* Category Badge */}
           {article.category && (
@@ -154,9 +153,9 @@ export const NewsCard = ({ article }: NewsCardProps) => {
 
         {/* Hover Glow Effect */}
         <div className="pointer-events-none absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-          <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-emerald-500/10 via-transparent to-blue-500/10" />
+          <div className="absolute inset-0 rounded-2xl bg-linear-to-br from-emerald-500/10 via-transparent to-blue-500/10" />
         </div>
-      </a>
+      </Link>
     </article>
   );
 };

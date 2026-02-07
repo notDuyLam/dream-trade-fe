@@ -58,34 +58,36 @@ const isAbsoluteUrl = (url: string) => /^https?:\/\//.test(url);
 let isRefreshing = false;
 let refreshPromise: Promise<void> | null = null;
 
-export async function apiRequest<TResponse, TBody = unknown>(options: RequestOptions<TBody>): Promise<TResponse> {
-  const baseUrl = options.path.startsWith('/auth') ? getAuthBaseUrl() : getApiBaseUrl();
-  const targetUrl = isAbsoluteUrl(options.path) ? options.path : `${baseUrl}${options.path}`;
-
+/**
+ * Universal fetch wrapper with automatic 401 handling and token refresh
+ * Use this for ALL API calls to ensure consistent auth behavior
+ */
+export async function fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
   const makeRequest = async (): Promise<Response> => {
-    return fetch(targetUrl, {
-      method: options.method ?? 'GET',
-      body: options.body ? JSON.stringify(options.body) : undefined,
+    return fetch(url, {
+      ...options,
+      credentials: 'include', // Always send cookies
       headers: {
         'Content-Type': 'application/json',
+        ...options.headers,
       },
-      credentials: 'include', // Important: Send cookies with requests
-      cache: options.cache ?? 'no-store',
-      next: options.revalidate === false ? undefined : { revalidate: options.revalidate ?? 0 },
     });
   };
 
   let response = await makeRequest();
 
-  // Nếu gặp 401 và không phải endpoint auth (tránh infinite loop)
-  if (response.status === 401 && !options.path.includes('/auth/refresh') && !options.path.includes('/auth/login')) {
-    // Nếu đang có request refresh khác đang chạy, đợi nó xong
+  // Handle 401 with token refresh (except for auth endpoints)
+  const isAuthEndpoint = url.includes('/auth/refresh') || url.includes('/auth/login') || url.includes('/auth/register');
+  
+  if (response.status === 401 && !isAuthEndpoint) {
+    console.log('Lỗi 401');
     if (isRefreshing && refreshPromise) {
+      // Wait for ongoing refresh
       await refreshPromise;
-      // Retry request với token mới
+      // Retry with new token
       response = await makeRequest();
     } else {
-      // Thực hiện refresh token
+      // Start refresh process
       isRefreshing = true;
       refreshPromise = (async () => {
         try {
@@ -100,7 +102,7 @@ export async function apiRequest<TResponse, TBody = unknown>(options: RequestOpt
           });
 
           if (!refreshResponse.ok) {
-            // Refresh token cũng hết hạn - clear auth và redirect về sign-in
+            // Refresh failed - clear auth and redirect
             if (typeof window !== 'undefined') {
               useAuthStore.getState().clearAuth();
               window.location.href = '/sign-in';
@@ -114,10 +116,24 @@ export async function apiRequest<TResponse, TBody = unknown>(options: RequestOpt
       })();
 
       await refreshPromise;
-      // Retry request với token mới
+      // Retry with new token
       response = await makeRequest();
     }
   }
+  console.log('API được gọi !!!');
+  return response;
+}
+
+export async function apiRequest<TResponse, TBody = unknown>(options: RequestOptions<TBody>): Promise<TResponse> {
+  const baseUrl = options.path.startsWith('/auth') ? getAuthBaseUrl() : getApiBaseUrl();
+  const targetUrl = isAbsoluteUrl(options.path) ? options.path : `${baseUrl}${options.path}`;
+
+  const response = await fetchWithAuth(targetUrl, {
+    method: options.method ?? 'GET',
+    body: options.body ? JSON.stringify(options.body) : undefined,
+    cache: options.cache ?? 'no-store',
+    next: options.revalidate === false ? undefined : { revalidate: options.revalidate ?? 0 },
+  });
 
   if (!response.ok) {
     const message = await response.text();
@@ -144,13 +160,9 @@ export async function subscriptionRequest<TResponse, TBody = unknown>(
   const baseUrl = getSubscriptionBaseUrl();
   const url = options.path.startsWith('http') ? options.path : `${baseUrl}${options.path}`;
 
-  const response = await fetch(url, {
+  const response = await fetchWithAuth(url, {
     method: options.method ?? 'GET',
     body: options.body ? JSON.stringify(options.body) : undefined,
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    credentials: 'include',
     cache: 'no-store',
   });
 
