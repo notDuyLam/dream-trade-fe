@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { useAuthStore } from '@/stores/authStore';
 import { useProfile } from '@/hooks/useAuth';
@@ -9,9 +10,11 @@ export function ProfileOverview() {
   const { data: profileData } = useProfile();
 
   // Sync profile data from API into store (ensures accountType is up-to-date)
-  if (profileData && user && profileData.accountType !== user.accountType) {
-    updateUser({ accountType: profileData.accountType });
-  }
+  useEffect(() => {
+    if (profileData && user && profileData.accountType !== user.accountType) {
+      updateUser({ accountType: profileData.accountType });
+    }
+  }, [profileData, user, updateUser]);
 
   if (!user) return null;
 

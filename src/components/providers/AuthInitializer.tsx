@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/auth/authService';
 import { useAuthStore } from '@/stores/authStore';
@@ -12,38 +12,58 @@ import { useAuthStore } from '@/stores/authStore';
  * has a valid session by calling the profile API endpoint.
  *
  * Flow:
- * 1. Check if Zustand has persisted user (isAuthenticated)
- * 2. If yes, verify httpOnly cookies are still valid
- * 3. Update auth state based on API response
+ * 1. Wait for Zustand persist to finish hydrating from localStorage
+ * 2. Check if user was previously authenticated (persisted state)
+ * 3. If yes, verify httpOnly cookies are still valid via /auth/profile
+ * 4. Update auth state based on API response
  */
 export function AuthInitializer() {
   const router = useRouter();
-  const { isAuthenticated, setAuth } = useAuthStore();
+  const [hasHydrated, setHasHydrated] = useState(false);
 
+  // Step 1: Wait for Zustand persist to finish hydrating
   useEffect(() => {
-    // Only verify if user appears to be authenticated (from persisted state)
-    if (!isAuthenticated) {
+    // If already hydrated before this effect runs
+    if (useAuthStore.persist.hasHydrated()) {
+      setHasHydrated(true);
       return;
     }
 
-    // Verify session by calling profile endpoint
+    // Otherwise listen for hydration to complete
+    const unsub = useAuthStore.persist.onFinishHydration(() => {
+      setHasHydrated(true);
+    });
+
+    return () => unsub();
+  }, []);
+
+  // Step 2: After hydration, verify session
+  useEffect(() => {
+    if (!hasHydrated) return;
+
+    const { isAuthenticated, setAuth, clearAuth } = useAuthStore.getState();
+
+    if (!isAuthenticated) {
+      console.log('[AutoLogin] Not authenticated after hydration, skipping');
+      return;
+    }
+
+    console.log('[AutoLogin] Verifying session...');
+
     const verifySession = async () => {
       try {
         const user = await authService.getProfile();
-        // Session is valid, update/sync user data
+        console.log('[AutoLogin] Session valid, redirecting to dashboard');
         setAuth(user);
         router.push('/dashboard');
       } catch (error) {
-        // Session is invalid (401) or expired, clear auth state and redirect
-        console.warn('Session verification failed, clearing auth:', error);
+        console.warn('[AutoLogin] Session expired, clearing auth:', error);
+        clearAuth();
       }
     };
 
     verifySession();
-    // Only run once on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [hasHydrated, router]);
 
-  // This component doesn't render anything
   return null;
 }
