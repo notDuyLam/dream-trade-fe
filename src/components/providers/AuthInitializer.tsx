@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { authService } from '@/services/auth/authService';
 import { useAuthStore } from '@/stores/authStore';
 
@@ -16,9 +15,11 @@ import { useAuthStore } from '@/stores/authStore';
  * 2. Check if user was previously authenticated (persisted state)
  * 3. If yes, verify httpOnly cookies are still valid via /auth/profile
  * 4. Update auth state based on API response
+ *
+ * Note: This component does NOT redirect. Redirects after login are
+ * handled by useLogin/useRegister hooks. This only refreshes auth state.
  */
 export function AuthInitializer() {
-  const router = useRouter();
   const [hasHydrated, setHasHydrated] = useState(false);
 
   // Step 1: Wait for Zustand persist to finish hydrating
@@ -37,33 +38,32 @@ export function AuthInitializer() {
     return () => unsub();
   }, []);
 
-  // Step 2: After hydration, verify session
+  // Step 2: After hydration, verify session (no redirect)
   useEffect(() => {
     if (!hasHydrated) return;
 
     const { isAuthenticated, setAuth, clearAuth } = useAuthStore.getState();
 
     if (!isAuthenticated) {
-      console.log('[AutoLogin] Not authenticated after hydration, skipping');
+      console.log('[AuthInit] Not authenticated after hydration, skipping');
       return;
     }
 
-    console.log('[AutoLogin] Verifying session...');
+    console.log('[AuthInit] Verifying session...');
 
     const verifySession = async () => {
       try {
         const user = await authService.getProfile();
-        console.log('[AutoLogin] Session valid, redirecting to dashboard');
+        console.log('[AuthInit] Session valid, user state refreshed');
         setAuth(user);
-        router.push('/dashboard');
       } catch (error) {
-        console.warn('[AutoLogin] Session expired, clearing auth:', error);
+        console.warn('[AuthInit] Session expired, clearing auth:', error);
         clearAuth();
       }
     };
 
     verifySession();
-  }, [hasHydrated, router]);
+  }, [hasHydrated]);
 
   return null;
 }
